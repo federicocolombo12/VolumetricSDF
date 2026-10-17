@@ -3,7 +3,11 @@
 [![Unity 6000.0+](https://img.shields.io/badge/Unity-6000.0%2B-blue.svg?logo=unity)](https://unity.com/)
 [![UPM Package](https://img.shields.io/badge/UPM-com.federicocolombo.volumetricsdf-purple.svg)](https://github.com/federicocolombo12/VolumetricSDF)
 [![Meta Quest 3](https://img.shields.io/badge/XR-Meta%20Quest%203%20%7C%2072%20FPS-green.svg)](https://www.meta.com/quest/quest-3/)
+[![Documentation: Online](https://img.shields.io/badge/Documentation-GitHub%20Pages-brightgreen.svg?logo=github)](https://federicocolombo12.github.io/VolumetricSDF/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+> 📖 **Full Technical Documentation & Architecture Manual**:  
+> Explore guides, benchmarks, and interactive diagrams at **[federicocolombo12.github.io/VolumetricSDF](https://federicocolombo12.github.io/VolumetricSDF/)**
 
 **VolumetricSDF** is a high-performance procedural implicit modeling and physics suite for Unity (URP / Unity 6). It combines order-independent **Constructive Solid Geometry (CSG)** sphere tracing raymarching, bounded **Modifier Volumes**, Morten Mikkelsen triplanar texturing, and a real-time **GPU Compute Voxelizer** ($16^3$ to $192^3$) with **Decoupled Chromatic Evaluation** for particle swarm interaction in **Unity VFX Graph**.
 

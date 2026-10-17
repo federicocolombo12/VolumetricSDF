@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "build": {
+    "content": [
+      {
+        "files": [
+          "**.md",
+          "**/toc.yml",
+          "toc.yml"
+        ],
+        "src": "Documentation~"
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**"
+        ],
+        "src": "Documentation~"
+      }
+    ],
+    "output": "_site",
+    "globalMetadata": {
+      "_appTitle": "VolumetricSDF | Real-Time CSG & GPU Voxelizer Engine",
+      "_appName": "VolumetricSDF",
+      "_appLogoPath": "images/sdf_volume_voxelizer_inspector.png",
+      "_appFaviconPath": "images/sdf_volume_voxelizer_inspector.png",
+      "_enableSearch": true,
+      "_gitContribute": {
+        "repo": "https://github.com/federicocolombo12/VolumetricSDF",
+        "branch": "main"
+      }
+    },
+    "template": [
+      "default",
+      "modern"
+    ]
+  }
+}
