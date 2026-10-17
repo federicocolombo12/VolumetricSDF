@@ -88,7 +88,18 @@ namespace MedicalXR.RayMarching
             }
             else
             {
-                Debug.LogWarning("[SdfVolumeVoxelizer] Compute Shader non assegnato nell'Ispettore.", this);
+#if UNITY_EDITOR
+                voxelizerShader = UnityEditor.AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/com.federicocolombo.volumetricsdf/Runtime/Shaders/SdfVolumeVoxelizer.compute")
+                               ?? UnityEditor.AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/_Core/RayMarching/Shaders/SdfVolumeVoxelizer.compute");
+                if (voxelizerShader != null)
+                {
+                    kernelIndex = voxelizerShader.FindKernel("CSMain");
+                }
+                else
+#endif
+                {
+                    Debug.LogWarning("[SdfVolumeVoxelizer] Compute Shader non assegnato nell'Ispettore.", this);
+                }
             }
 
             EnsureDummyTexture();
