@@ -1,6 +1,6 @@
 # SDF Primitives & CSG Operations
 
-The **Volumetric Engine** in PulseEngine renders solid procedural geometry using **Signed Distance Fields (SDFs)** evaluated via real-time raymarching in the Universal Render Pipeline (URP). Unlike traditional polygonal meshes made of triangles, SDFs evaluate continuous mathematical functions directly on the GPU, providing infinite resolution, smooth organic blending, and zero topology distortion.
+The **Volumetric Engine** in VolumetricSDF renders solid procedural geometry using **Signed Distance Fields (SDFs)** evaluated via real-time raymarching in the Universal Render Pipeline (URP). Unlike traditional polygonal meshes made of triangles, SDFs evaluate continuous mathematical functions directly on the GPU, providing infinite resolution, smooth organic blending, and zero topology distortion.
 
 ---
 
@@ -20,7 +20,7 @@ Surfaces are rendered using **Sphere Tracing** (Raymarching): a ray is marched f
 
 ## 2. Supported Mathematical Primitives
 
-PulseEngine evaluates five analytic primitives and one sampled volumetric primitive:
+VolumetricSDF evaluates five analytic primitives and one sampled volumetric primitive:
 
 | Primitive | Mathematical Formula $f(\mathbf{p})$ | Description |
 | :--- | :--- | :--- |
@@ -43,7 +43,7 @@ Multiple `SdfNode` components combine constructively to form complex organisms o
 * **Intersection**: $d = \max(d_1, d_2)$
 
 ### Polynomial Smooth Blending (Inigo Quilez Formulation)
-Sharp boolean cuts look rigid and mechanical. PulseEngine incorporates smooth polynomial blending to simulate visceral, melting, and organic fusions:
+Sharp boolean cuts look rigid and mechanical. VolumetricSDF incorporates smooth polynomial blending to simulate visceral, melting, and organic fusions:
 
 #### Smooth Union
 $$h = \text{clamp}\left(0.5 + 0.5 \cdot \frac{d_2 - d_1}{k}, 0.0, 1.0\right)$$
@@ -89,7 +89,7 @@ Each primitive in the scene is governed by an `SdfNode` component:
 
 ## 5. Hierarchy & Evaluation Order
 
-In PulseEngine, nodes evaluate **Top-to-Bottom based on Unity's Sibling Index**:
+In VolumetricSDF, nodes evaluate **Top-to-Bottom based on Unity's Sibling Index**:
 1. The topmost child of `SdfGroupController` initializes the distance field.
 2. Each subsequent child modifies the accumulated distance using its chosen `combineOp`.
 3. To change evaluation priority, simply re-order nodes in the Unity Hierarchy window.

@@ -2,7 +2,7 @@
 
 Maintaining a rock-solid framerate ($72\text{ Hz}$ or $90\text{ Hz}$) is mandatory in Extended Reality (XR) to prevent cybersickness and visual disorientation, especially in sensitive clinical populations.
 
-PulseEngine includes an automated scientific profiling suite (`MedicalXRBenchmarkRunner`) and an in-headset HUD (`MedicalXRPerformanceHUD`) to systematically validate framerates, GPU frame times, VRAM footprint, and garbage collection behavior.
+VolumetricSDF includes an automated scientific profiling suite (`MedicalXRBenchmarkRunner`) and an in-headset HUD (`MedicalXRPerformanceHUD`) to systematically validate framerates, GPU frame times, VRAM footprint, and garbage collection behavior.
 
 ---
 
@@ -65,8 +65,8 @@ Across all 11 benchmark trials, runtime Garbage Collection allocation was strict
 
 ## 4. How to Run the Benchmark
 
-### Method 1: From the Unity Editor (DAW Mixer)
-1. Open **Window > PulseEngine > DAW Mixer**.
+### Method 1: From the Unity Editor
+1. In the Inspector of your benchmark scene GameObject containing `MedicalXRBenchmarkRunner` (or via companion **PulseEngine > DAW Mixer**).
 2. Click the **`[⚡ BENCHMARK]`** toolbar button.
 3. Click **`[▶ Esegui Suite Benchmark]`**. The editor enters Play Mode, executes the routine, and exports the Markdown and CSV tables automatically.
 
