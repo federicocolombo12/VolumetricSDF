@@ -257,7 +257,7 @@ Shader "MedicalXR/BioSignalSDF"
             float3 applyModifier(int index, float3 p)
             {
                 float4 param = _NodeParams[index]; // x = 100+scope+type, y = strength, z = freq, w = falloff
-                int modType = ((int)param.x) % 10;
+                int modType = (int)(((uint)param.x) % 10u);
                 float strength = param.y;
                 float frequency = param.z;
                 float falloff = max(param.w, 0.001);
