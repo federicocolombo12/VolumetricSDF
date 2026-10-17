@@ -20,7 +20,7 @@ namespace MedicalXR.EditorScripts
             };
         }
 
-        [MenuItem("MedicalXR/Generate Clinical Scene Templates")]
+        [MenuItem("MedicalXR/Tools/Generate Clinical Scene Templates")]
         public static void GenerateAll()
         {
             EnsureDirectory("Assets/_Core/SDFTemplate");
