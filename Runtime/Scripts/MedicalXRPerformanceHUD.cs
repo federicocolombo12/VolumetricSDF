@@ -1,11 +1,5 @@
+using System;
 using UnityEngine;
-#if PULSE_ENGINE_PRESENT
-using GenericDataStreaming;
-#endif
-
-#if ENABLE_INPUT_SYSTEM
-using UnityEngine.InputSystem;
-#endif
 
 namespace MedicalXR.RayMarching
 {
@@ -36,9 +30,7 @@ namespace MedicalXR.RayMarching
 
         private SdfVolumeVoxelizer voxelizer;
         private SdfGroupController controller;
-#if PULSE_ENGINE_PRESENT
-        private DataStreamSimulatorSource simulator;
-#endif
+        private Component simulator;
         private MedicalXRBenchmarkRunner runner;
 
         private static readonly int[] AvailableResolutions = { 16, 32, 48, 64, 96, 128 };
@@ -52,9 +44,18 @@ namespace MedicalXR.RayMarching
         {
             if (voxelizer == null) voxelizer = FindAnyObjectByType<SdfVolumeVoxelizer>();
             if (controller == null) controller = FindAnyObjectByType<SdfGroupController>();
-#if PULSE_ENGINE_PRESENT
-            if (simulator == null) simulator = FindAnyObjectByType<DataStreamSimulatorSource>();
-#endif
+            if (simulator == null)
+            {
+                var allMonos = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+                foreach (var mb in allMonos)
+                {
+                    if (mb != null && mb.GetType().Name == "DataStreamSimulatorSource")
+                    {
+                        simulator = mb;
+                        break;
+                    }
+                }
+            }
             if (runner == null) runner = FindAnyObjectByType<MedicalXRBenchmarkRunner>();
         }
 
@@ -79,20 +80,35 @@ namespace MedicalXR.RayMarching
         private void HandleInputs()
         {
 #if ENABLE_INPUT_SYSTEM
-            var kb = Keyboard.current;
-            if (kb != null)
+            var kbType = Type.GetType("UnityEngine.InputSystem.Keyboard, Unity.InputSystem");
+            if (kbType != null)
             {
-                if (kb.f1Key.wasPressedThisFrame) showHUD = !showHUD;
-                if (controller != null && kb.f2Key.wasPressedThisFrame) controller.renderSolidMesh = !controller.renderSolidMesh;
-                if (voxelizer != null && kb.f3Key.wasPressedThisFrame) CycleResolution();
-                if (kb.f4Key.wasPressedThisFrame) TriggerBenchmark();
+                var currentProp = kbType.GetProperty("current", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                var kb = currentProp?.GetValue(null);
+                if (kb != null)
+                {
+                    if (IsKeyPressed(kb, "f1Key")) showHUD = !showHUD;
+                    if (controller != null && IsKeyPressed(kb, "f2Key")) controller.renderSolidMesh = !controller.renderSolidMesh;
+                    if (voxelizer != null && IsKeyPressed(kb, "f3Key")) CycleResolution();
+                    if (IsKeyPressed(kb, "f4Key")) TriggerBenchmark();
+                }
             }
-#elif ENABLE_LEGACY_INPUT_MANAGER
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
             if (Input.GetKeyDown(toggleKey)) showHUD = !showHUD;
             if (controller != null && Input.GetKeyDown(toggleSolidMeshKey)) controller.renderSolidMesh = !controller.renderSolidMesh;
             if (voxelizer != null && Input.GetKeyDown(cycleResolutionKey)) CycleResolution();
             if (Input.GetKeyDown(benchmarkKey)) TriggerBenchmark();
 #endif
+        }
+
+        private static bool IsKeyPressed(object keyboard, string keyName)
+        {
+            var prop = keyboard.GetType().GetProperty(keyName);
+            var keyControl = prop?.GetValue(keyboard);
+            if (keyControl == null) return false;
+            var wasPressedProp = keyControl.GetType().GetProperty("wasPressedThisFrame");
+            return wasPressedProp != null && (bool)wasPressedProp.GetValue(keyControl);
         }
 
         public void TriggerBenchmark()
@@ -175,13 +191,16 @@ namespace MedicalXR.RayMarching
                 GUI.color = Color.white;
             }
 
-#if PULSE_ENGINE_PRESENT
             // Scenario Attivo
-            if (simulator != null && simulator.isActiveAndEnabled)
+            if (simulator != null)
             {
-                GUILayout.Label($"Scenario Clinico: <b>{simulator.currentScenario}</b>");
+                var scenarioProp = simulator.GetType().GetProperty("currentScenario") ?? simulator.GetType().GetField("currentScenario") as System.Reflection.MemberInfo;
+                var val = scenarioProp is System.Reflection.PropertyInfo pi ? pi.GetValue(simulator) : (scenarioProp is System.Reflection.FieldInfo fi ? fi.GetValue(simulator) : null);
+                if (val != null)
+                {
+                    GUILayout.Label($"Scenario Clinico: <b>{val}</b>");
+                }
             }
-#endif
 
             // Benchmark Running Banner
             if (runner != null && runner.isRunning)

@@ -13,12 +13,6 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [
-        {
-            "name": "com.federicocolombo.pulseengine",
-            "expression": "1.0.0",
-            "define": "PULSE_ENGINE_PRESENT"
-        }
-    ],
+    "versionDefines": [],
     "noEngineReferences": false
 }

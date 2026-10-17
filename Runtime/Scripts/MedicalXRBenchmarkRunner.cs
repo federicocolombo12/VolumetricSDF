@@ -5,9 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-#if PULSE_ENGINE_PRESENT
-using GenericDataStreaming;
-#endif
 
 namespace MedicalXR.RayMarching
 {
@@ -57,9 +54,7 @@ namespace MedicalXR.RayMarching
 
         private SdfVolumeVoxelizer voxelizer;
         private SdfGroupController controller;
-#if PULSE_ENGINE_PRESENT
-        private DataStreamSimulatorSource simulator;
-#endif
+        private Component simulator;
 
         public event Action<string> OnBenchmarkStatusChanged;
         public event Action OnBenchmarkCompleted;
@@ -82,9 +77,37 @@ namespace MedicalXR.RayMarching
         {
             if (voxelizer == null) voxelizer = FindAnyObjectByType<SdfVolumeVoxelizer>();
             if (controller == null) controller = FindAnyObjectByType<SdfGroupController>();
-#if PULSE_ENGINE_PRESENT
-            if (simulator == null) simulator = FindAnyObjectByType<DataStreamSimulatorSource>();
-#endif
+            if (simulator == null)
+            {
+                var allMonos = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+                foreach (var mb in allMonos)
+                {
+                    if (mb != null && mb.GetType().Name == "DataStreamSimulatorSource")
+                    {
+                        simulator = mb;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private object GetCurrentScenario()
+        {
+            if (simulator == null) return null;
+            var prop = simulator.GetType().GetProperty("currentScenario") ?? simulator.GetType().GetField("currentScenario") as System.Reflection.MemberInfo;
+            return prop is System.Reflection.PropertyInfo pi ? pi.GetValue(simulator) : (prop is System.Reflection.FieldInfo fi ? fi.GetValue(simulator) : null);
+        }
+
+        private void SetSimulatorScenario(int scenarioIndex)
+        {
+            if (simulator == null) return;
+            var setMethod = simulator.GetType().GetMethod("SetScenario");
+            if (setMethod != null)
+            {
+                var paramType = setMethod.GetParameters()[0].ParameterType;
+                var enumVal = Enum.ToObject(paramType, scenarioIndex);
+                setMethod.Invoke(simulator, new object[] { enumVal });
+            }
         }
 
         [ContextMenu("Avvia Benchmark")]
@@ -109,22 +132,17 @@ namespace MedicalXR.RayMarching
 
             // Salva lo stato iniziale
             int initialRes = voxelizer.textureResolution;
-            bool initialSolidMesh = controller.renderSolidMesh;
-#if PULSE_ENGINE_PRESENT
-            DataStreamSimulatorSource.SimulationScenario initialScenario = simulator != null ? simulator.currentScenario : DataStreamSimulatorSource.SimulationScenario.Manual;
-#endif
+            object initialScenario = GetCurrentScenario();
 
             int[] resolutions = { 16, 32, 48, 64, 96, 128 };
-            int totalSteps = resolutions.Length + 4 + 3; // Res tests + Decoupling tests + Scenario tests
+            int totalSteps = resolutions.Length + 4 + (simulator != null ? 3 : 0); // Res tests + Decoupling tests + Scenario tests
             int currentStep = 0;
 
             // =========================================================================
             // TEST 1: Scalabilità Risoluzione Voxelizer (16^3 -> 128^3) con Solid Mesh ON
             // =========================================================================
             controller.renderSolidMesh = true;
-#if PULSE_ENGINE_PRESENT
-            if (simulator != null) simulator.SetScenario(DataStreamSimulatorSource.SimulationScenario.Calma);
-#endif
+            SetSimulatorScenario(1); // Calma
 
             foreach (int res in resolutions)
             {
@@ -179,46 +197,49 @@ namespace MedicalXR.RayMarching
                 ));
             }
 
-#if PULSE_ENGINE_PRESENT
-            // =========================================================================
-            // TEST 3: Scenari Clinici a confronto (Calma, Stress, Ipossia a 32^3)
-            // =========================================================================
-            voxelizer.textureResolution = 32;
-            controller.renderSolidMesh = true;
-
-            var scenarios = new[]
+            if (simulator != null)
             {
-                DataStreamSimulatorSource.SimulationScenario.Calma,
-                DataStreamSimulatorSource.SimulationScenario.Stress,
-                DataStreamSimulatorSource.SimulationScenario.Ipossia
-            };
+                // =========================================================================
+                // TEST 3: Scenari Clinici a confronto (Calma, Stress, Ipossia a 32^3)
+                // =========================================================================
+                voxelizer.textureResolution = 32;
+                controller.renderSolidMesh = true;
 
-            foreach (var sc in scenarios)
-            {
-                currentStep++;
-                progressPercent = (float)currentStep / totalSteps;
-                currentTestStatus = $"Test Scenario Clinico: {sc} (32^3)";
-                OnBenchmarkStatusChanged?.Invoke(currentTestStatus);
+                var scenarios = new (int id, string name)[]
+                {
+                    (1, "Calma"),
+                    (2, "Stress"),
+                    (3, "Ipossia")
+                };
 
-                if (simulator != null) simulator.SetScenario(sc);
-                // Attendiamo 1 secondo per consentire la transizione biologica organica
-                yield return new WaitForSecondsRealtime(1.2f);
+                foreach (var sc in scenarios)
+                {
+                    currentStep++;
+                    progressPercent = (float)currentStep / totalSteps;
+                    currentTestStatus = $"Test Scenario Clinico: {sc.name} (32^3)";
+                    OnBenchmarkStatusChanged?.Invoke(currentTestStatus);
 
-                yield return StartCoroutine(SamplePerformance(
-                    testName: $"Scenario_{sc}_32^3",
-                    res: 32,
-                    solidMesh: true,
-                    scenario: sc.ToString()
-                ));
+                    SetSimulatorScenario(sc.id);
+                    // Attendiamo 1 secondo per consentire la transizione biologica organica
+                    yield return new WaitForSecondsRealtime(1.2f);
+
+                    yield return StartCoroutine(SamplePerformance(
+                        testName: $"Scenario_{sc.name}_32^3",
+                        res: 32,
+                        solidMesh: true,
+                        scenario: sc.name
+                    ));
+                }
             }
-#endif
 
             // Ripristino stato iniziale
             voxelizer.textureResolution = initialRes;
-            controller.renderSolidMesh = initialSolidMesh;
-#if PULSE_ENGINE_PRESENT
-            if (simulator != null) simulator.SetScenario(initialScenario);
-#endif
+            controller.renderSolidMesh = true;
+            if (simulator != null && initialScenario != null)
+            {
+                var setMethod = simulator.GetType().GetMethod("SetScenario");
+                setMethod?.Invoke(simulator, new object[] { initialScenario });
+            }
 
             // Esportazione Report
             try

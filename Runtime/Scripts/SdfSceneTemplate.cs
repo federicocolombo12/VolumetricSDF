@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-#if PULSE_ENGINE_PRESENT
-using GenericDataStreaming;
-#endif
 
 namespace MedicalXR.RayMarching
 {
@@ -153,21 +150,6 @@ namespace MedicalXR.RayMarching
         public Color gizmoColor = new Color(1f, 0.6f, 0.1f, 0.35f);
     }
 
-#if PULSE_ENGINE_PRESENT
-    [System.Serializable]
-    public class ChannelSnapshot
-    {
-        public string id;
-        public ChannelSourceType sourceType = ChannelSourceType.External;
-        public ChannelFilterType filterType = ChannelFilterType.None;
-        public string sourceChannelId;
-        public Vector2 inputRange = new Vector2(0f, 1f);
-        public Vector2 outputRange = new Vector2(0f, 1f);
-        public float smoothing = 0.5f;
-        public bool isMuted = false;
-        public bool isSolo = false;
-    }
-#else
     [System.Serializable]
     public class ChannelSnapshot
     {
@@ -181,7 +163,6 @@ namespace MedicalXR.RayMarching
         public bool isMuted = false;
         public bool isSolo = false;
     }
-#endif
 
     [System.Serializable]
     public class PropertyBinderSnapshot
@@ -352,61 +333,97 @@ namespace MedicalXR.RayMarching
                 template.volumeSize = voxelizer.volumeSize;
             }
 
-#if PULSE_ENGINE_PRESENT
-            // 2. DataStream Registry & Canali
-            if (DataStreamRegistry.Instance != null && DataStreamRegistry.Instance.channels != null)
+            // 2. DataStream Registry & Canali (se PulseEngine e installato)
+            var registryType = FindTypeAcrossAssemblies("GenericDataStreaming.DataStreamRegistry");
+            if (registryType != null)
             {
-                foreach (var ch in DataStreamRegistry.Instance.channels)
+                var instProp = registryType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                var regInst = instProp?.GetValue(null);
+                if (regInst != null)
                 {
-                    template.channels.Add(new ChannelSnapshot
+                    var channelsField = registryType.GetField("channels");
+                    var chList = channelsField?.GetValue(regInst) as System.Collections.IEnumerable;
+                    if (chList != null)
                     {
-                        id = ch.id,
-                        sourceType = ch.sourceType,
-                        filterType = ch.filterType,
-                        sourceChannelId = ch.sourceChannelId,
-                        inputRange = ch.inputRange,
-                        outputRange = ch.outputRange,
-                        smoothing = ch.smoothing,
-                        isMuted = ch.isMuted,
-                        isSolo = ch.isSolo
-                    });
+                        foreach (var ch in chList)
+                        {
+                            var chType = ch.GetType();
+                            template.channels.Add(new ChannelSnapshot
+                            {
+                                id = chType.GetField("id")?.GetValue(ch) as string,
+                                sourceType = Convert.ToInt32(chType.GetField("sourceType")?.GetValue(ch) ?? 0),
+                                filterType = Convert.ToInt32(chType.GetField("filterType")?.GetValue(ch) ?? 0),
+                                sourceChannelId = chType.GetField("sourceChannelId")?.GetValue(ch) as string,
+                                inputRange = (Vector2)(chType.GetField("inputRange")?.GetValue(ch) ?? Vector2.zero),
+                                outputRange = (Vector2)(chType.GetField("outputRange")?.GetValue(ch) ?? Vector2.one),
+                                smoothing = Convert.ToSingle(chType.GetField("smoothing")?.GetValue(ch) ?? 0.5f),
+                                isMuted = Convert.ToBoolean(chType.GetField("isMuted")?.GetValue(ch) ?? false),
+                                isSolo = Convert.ToBoolean(chType.GetField("isSolo")?.GetValue(ch) ?? false)
+                            });
+                        }
+                    }
                 }
             }
 
             // 3. Property Binders
-            var pBinders = UnityEngine.Object.FindObjectsByType<DataStreamPropertyBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            foreach (var pb in pBinders)
+            var propBinderType = FindTypeAcrossAssemblies("GenericDataStreaming.DataStreamPropertyBinder");
+            if (propBinderType != null)
             {
-                if (pb == null || pb.targetComponent == null) continue;
-                template.propertyBinders.Add(new PropertyBinderSnapshot
+                var pBinders = UnityEngine.Object.FindObjectsByType(propBinderType, FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var pb in pBinders)
                 {
-                    channelId = pb.channelId,
-                    targetGameObjectName = pb.targetComponent.gameObject.name,
-                    targetComponentType = pb.targetComponent.GetType().FullName,
-                    targetPropertyName = pb.targetPropertyName,
-                    weightMultiplier = pb.weightMultiplier,
-                    useLocalRemap = pb.useLocalRemap,
-                    localRemap = pb.localRemap
-                });
+                    if (pb == null) continue;
+                    var targetComp = propBinderType.GetField("targetComponent")?.GetValue(pb) as Component;
+                    if (targetComp == null) continue;
+
+                    template.propertyBinders.Add(new PropertyBinderSnapshot
+                    {
+                        channelId = propBinderType.GetField("channelId")?.GetValue(pb) as string,
+                        targetGameObjectName = targetComp.gameObject.name,
+                        targetComponentType = targetComp.GetType().FullName,
+                        targetPropertyName = propBinderType.GetField("targetPropertyName")?.GetValue(pb) as string,
+                        weightMultiplier = Convert.ToSingle(propBinderType.GetField("weightMultiplier")?.GetValue(pb) ?? 1f),
+                        useLocalRemap = Convert.ToBoolean(propBinderType.GetField("useLocalRemap")?.GetValue(pb) ?? false),
+                        localRemap = (Vector2)(propBinderType.GetField("localRemap")?.GetValue(pb) ?? new Vector2(0f, 1f))
+                    });
+                }
             }
 
             // 4. Color Binders
-            var cBinders = UnityEngine.Object.FindObjectsByType<DataStreamColorBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            foreach (var cb in cBinders)
+            var colorBinderType = FindTypeAcrossAssemblies("GenericDataStreaming.DataStreamColorBinder");
+            if (colorBinderType != null)
             {
-                if (cb == null || cb.targetComponent == null) continue;
-                template.colorBinders.Add(new ColorBinderSnapshot
+                var cBinders = UnityEngine.Object.FindObjectsByType(colorBinderType, FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var cb in cBinders)
                 {
-                    channelId = cb.channelId,
-                    targetGameObjectName = cb.targetComponent.gameObject.name,
-                    targetComponentType = cb.targetComponent.GetType().FullName,
-                    targetPropertyName = cb.targetPropertyName,
-                    colorGradient = cb.colorGradient
-                });
+                    if (cb == null) continue;
+                    var targetComp = colorBinderType.GetField("targetComponent")?.GetValue(cb) as Component;
+                    if (targetComp == null) continue;
+
+                    template.colorBinders.Add(new ColorBinderSnapshot
+                    {
+                        channelId = colorBinderType.GetField("channelId")?.GetValue(cb) as string,
+                        targetGameObjectName = targetComp.gameObject.name,
+                        targetComponentType = targetComp.GetType().FullName,
+                        targetPropertyName = colorBinderType.GetField("targetPropertyName")?.GetValue(cb) as string,
+                        colorGradient = colorBinderType.GetField("colorGradient")?.GetValue(cb) as Gradient
+                    });
+                }
             }
-#endif
 
             return template;
+        }
+
+        private static Type FindTypeAcrossAssemblies(string fullName)
+        {
+            var t = Type.GetType(fullName);
+            if (t != null) return t;
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                t = asm.GetType(fullName);
+                if (t != null) return t;
+            }
+            return null;
         }
 
         /// <summary>
@@ -629,52 +646,82 @@ namespace MedicalXR.RayMarching
                 voxelizer.textureResolution = textureResolution;
             }
 
-#if PULSE_ENGINE_PRESENT
-            // 2. Canali del DataStreamRegistry
-            if (DataStreamRegistry.Instance != null && channels != null && channels.Count > 0)
+            // 2. Canali del DataStreamRegistry (se PulseEngine e presente)
+            var registryType = FindTypeAcrossAssemblies("GenericDataStreaming.DataStreamRegistry");
+            var chType = FindTypeAcrossAssemblies("GenericDataStreaming.DataStreamChannel");
+            if (registryType != null && chType != null && channels != null && channels.Count > 0)
             {
-#if UNITY_EDITOR
-                UnityEditor.Undo.RecordObject(DataStreamRegistry.Instance, "Apply Channels");
-#endif
-                DataStreamRegistry.Instance.channels = channels.Select(ch => new DataStreamChannel
+                var instProp = registryType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                var regInst = instProp?.GetValue(null);
+                if (regInst != null)
                 {
-                    id = ch.id,
-                    sourceType = ch.sourceType,
-                    filterType = ch.filterType,
-                    sourceChannelId = ch.sourceChannelId,
-                    inputRange = ch.inputRange,
-                    outputRange = ch.outputRange,
-                    smoothing = ch.smoothing,
-                    isMuted = ch.isMuted,
-                    isSolo = ch.isSolo
-                }).ToList();
-                DataStreamRegistry.Instance.RefreshRegistry();
+#if UNITY_EDITOR
+                    UnityEditor.Undo.RecordObject((UnityEngine.Object)regInst, "Apply Channels");
+#endif
+                    var listType = typeof(List<>).MakeGenericType(chType);
+                    var list = (System.Collections.IList)Activator.CreateInstance(listType);
+
+                    var srcEnumType = FindTypeAcrossAssemblies("GenericDataStreaming.ChannelSourceType");
+                    var fltEnumType = FindTypeAcrossAssemblies("GenericDataStreaming.ChannelFilterType");
+
+                    foreach (var chSnap in channels)
+                    {
+                        var chObj = Activator.CreateInstance(chType);
+                        chType.GetField("id")?.SetValue(chObj, chSnap.id);
+                        if (srcEnumType != null) chType.GetField("sourceType")?.SetValue(chObj, Enum.ToObject(srcEnumType, chSnap.sourceType));
+                        if (fltEnumType != null) chType.GetField("filterType")?.SetValue(chObj, Enum.ToObject(fltEnumType, chSnap.filterType));
+                        chType.GetField("sourceChannelId")?.SetValue(chObj, chSnap.sourceChannelId);
+                        chType.GetField("inputRange")?.SetValue(chObj, chSnap.inputRange);
+                        chType.GetField("outputRange")?.SetValue(chObj, chSnap.outputRange);
+                        chType.GetField("smoothing")?.SetValue(chObj, chSnap.smoothing);
+                        chType.GetField("isMuted")?.SetValue(chObj, chSnap.isMuted);
+                        chType.GetField("isSolo")?.SetValue(chObj, chSnap.isSolo);
+                        list.Add(chObj);
+                    }
+
+                    registryType.GetField("channels")?.SetValue(regInst, list);
+                    registryType.GetMethod("RefreshRegistry")?.Invoke(regInst, null);
+                }
             }
 
-            // 3. Ripristino Binders
-            // Elimina i vecchi binder
-            var oldFloatBinders = UnityEngine.Object.FindObjectsByType<DataStreamPropertyBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            foreach (var b in oldFloatBinders)
+            // 3. Ripristino Binders (se PulseEngine e presente)
+            var propBinderType = FindTypeAcrossAssemblies("GenericDataStreaming.DataStreamPropertyBinder");
+            var colorBinderType = FindTypeAcrossAssemblies("GenericDataStreaming.DataStreamColorBinder");
+
+            if (propBinderType != null)
             {
+                var oldFloatBinders = UnityEngine.Object.FindObjectsByType(propBinderType, FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var b in oldFloatBinders)
+                {
+                    if (b is UnityEngine.Object uo)
+                    {
 #if UNITY_EDITOR
-                UnityEditor.Undo.DestroyObjectImmediate(b);
+                        UnityEditor.Undo.DestroyObjectImmediate(uo);
 #else
-                UnityEngine.Object.Destroy(b);
+                        UnityEngine.Object.Destroy(uo);
 #endif
+                    }
+                }
             }
 
-            var oldColorBinders = UnityEngine.Object.FindObjectsByType<DataStreamColorBinder>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-            foreach (var b in oldColorBinders)
+            if (colorBinderType != null)
             {
+                var oldColorBinders = UnityEngine.Object.FindObjectsByType(colorBinderType, FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (var b in oldColorBinders)
+                {
+                    if (b is UnityEngine.Object uo)
+                    {
 #if UNITY_EDITOR
-                UnityEditor.Undo.DestroyObjectImmediate(b);
+                        UnityEditor.Undo.DestroyObjectImmediate(uo);
 #else
-                UnityEngine.Object.Destroy(b);
+                        UnityEngine.Object.Destroy(uo);
 #endif
+                    }
+                }
             }
 
             // Ricrea Property Binders
-            if (propertyBinders != null)
+            if (propBinderType != null && propertyBinders != null)
             {
                 foreach (var pbSnap in propertyBinders)
                 {
@@ -704,23 +751,23 @@ namespace MedicalXR.RayMarching
                         }
 
 #if UNITY_EDITOR
-                        var newBinder = UnityEditor.Undo.AddComponent<DataStreamPropertyBinder>(targetGo);
+                        var newBinder = UnityEditor.Undo.AddComponent(targetGo, propBinderType);
 #else
-                        var newBinder = targetGo.AddComponent<DataStreamPropertyBinder>();
+                        var newBinder = targetGo.AddComponent(propBinderType);
 #endif
-                        newBinder.channelId = pbSnap.channelId;
-                        newBinder.targetComponent = targetComp;
-                        newBinder.targetPropertyName = pbSnap.targetPropertyName;
-                        newBinder.weightMultiplier = pbSnap.weightMultiplier;
-                        newBinder.useLocalRemap = pbSnap.useLocalRemap;
-                        newBinder.localRemap = pbSnap.localRemap;
-                        newBinder.InitializeBindings();
+                        propBinderType.GetField("channelId")?.SetValue(newBinder, pbSnap.channelId);
+                        propBinderType.GetField("targetComponent")?.SetValue(newBinder, targetComp);
+                        propBinderType.GetField("targetPropertyName")?.SetValue(newBinder, pbSnap.targetPropertyName);
+                        propBinderType.GetField("weightMultiplier")?.SetValue(newBinder, pbSnap.weightMultiplier);
+                        propBinderType.GetField("useLocalRemap")?.SetValue(newBinder, pbSnap.useLocalRemap);
+                        propBinderType.GetField("localRemap")?.SetValue(newBinder, pbSnap.localRemap);
+                        propBinderType.GetMethod("InitializeBindings")?.Invoke(newBinder, null);
                     }
                 }
             }
 
             // Ricrea Color Binders
-            if (colorBinders != null)
+            if (colorBinderType != null && colorBinders != null)
             {
                 foreach (var cbSnap in colorBinders)
                 {
@@ -752,26 +799,22 @@ namespace MedicalXR.RayMarching
                         }
 
 #if UNITY_EDITOR
-                        var newColorBinder = UnityEditor.Undo.AddComponent<DataStreamColorBinder>(targetGo);
+                        var newColorBinder = UnityEditor.Undo.AddComponent(targetGo, colorBinderType);
 #else
-                        var newColorBinder = targetGo.AddComponent<DataStreamColorBinder>();
+                        var newColorBinder = targetGo.AddComponent(colorBinderType);
 #endif
-                        newColorBinder.channelId = cbSnap.channelId;
-                        newColorBinder.targetComponent = targetComp;
-                        newColorBinder.targetPropertyName = cbSnap.targetPropertyName;
-                        newColorBinder.colorGradient = cbSnap.colorGradient;
-                        newColorBinder.InitializeBindings();
+                        colorBinderType.GetField("channelId")?.SetValue(newColorBinder, cbSnap.channelId);
+                        colorBinderType.GetField("targetComponent")?.SetValue(newColorBinder, targetComp);
+                        colorBinderType.GetField("targetPropertyName")?.SetValue(newColorBinder, cbSnap.targetPropertyName);
+                        colorBinderType.GetField("colorGradient")?.SetValue(newColorBinder, cbSnap.colorGradient);
+                        colorBinderType.GetMethod("InitializeBindings")?.Invoke(newColorBinder, null);
                     }
                 }
             }
-#endif
 
 #if UNITY_EDITOR
             if (controller != null) UnityEditor.EditorUtility.SetDirty(controller);
             if (voxelizer != null) UnityEditor.EditorUtility.SetDirty(voxelizer);
-#if PULSE_ENGINE_PRESENT
-            if (DataStreamRegistry.Instance != null) UnityEditor.EditorUtility.SetDirty(DataStreamRegistry.Instance);
-#endif
 #endif
 
             // Solo se il template non specificava una dimensione valida, calcolala con FitToNodes

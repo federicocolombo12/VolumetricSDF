@@ -1,8 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-#if PULSE_ENGINE_PRESENT
-using GenericDataStreaming;
-#endif
 
 namespace MedicalXR.RayMarching
 {
@@ -586,43 +583,37 @@ namespace MedicalXR.RayMarching
             
             GameObject binderTargetGo = vfx != null ? vfx.gameObject : gameObject;
 
-#if PULSE_ENGINE_PRESENT
-            // Rimuoviamo i binder globalmente dalla scena per evitare duplicati
-            DataStreamPropertyBinder[] allBinders = Object.FindObjectsByType<DataStreamPropertyBinder>(FindObjectsSortMode.None);
-            foreach (var binder in allBinders)
+            // 3. Gestione dei DataStreamPropertyBinder dinamici se PulseEngine e presente
+            var binderType = System.Type.GetType("GenericDataStreaming.DataStreamPropertyBinder, PulseEngine.Runtime");
+            if (binderType != null)
             {
-                if (Application.isPlaying) Destroy(binder);
-                else DestroyImmediate(binder);
-            }
-
-            // Aggiungiamo i nuovi binder basati sul template
-            if (template.dataBindings != null)
-            {
-                Renderer rend = GetComponent<Renderer>();
-                
-                foreach (var bindingRule in template.dataBindings)
+                var allBinders = Object.FindObjectsByType(binderType, FindObjectsSortMode.None);
+                foreach (var binder in allBinders)
                 {
-                    GenericDataStreaming.DataStreamPropertyBinder newBinder = binderTargetGo.AddComponent<GenericDataStreaming.DataStreamPropertyBinder>();
-                    newBinder.channelId = bindingRule.channelId;
-                    newBinder.targetPropertyName = bindingRule.targetPropertyName;
-                    
-                    if (bindingRule.targetType == SdfBindingTargetType.MaterialProperty)
+                    if (binder is Component comp)
                     {
-                        newBinder.targetComponent = rend;
+                        if (Application.isPlaying) Destroy(comp);
+                        else DestroyImmediate(comp);
                     }
-                    else if (bindingRule.targetType == SdfBindingTargetType.VfxProperty || bindingRule.targetType == SdfBindingTargetType.VfxEvent)
+                }
+
+                // Aggiungiamo i nuovi binder basati sul template
+                if (template.dataBindings != null)
+                {
+                    Renderer rend = GetComponent<Renderer>();
+                    foreach (var bindingRule in template.dataBindings)
                     {
-                        newBinder.targetComponent = vfx;
+                        Component targetComp = (bindingRule.targetType == SdfBindingTargetType.MaterialProperty) ? (Component)rend
+                            : ((bindingRule.targetType == SdfBindingTargetType.VfxProperty || bindingRule.targetType == SdfBindingTargetType.VfxEvent) ? (Component)vfx : this);
+
+                        var newBinder = binderTargetGo.AddComponent(binderType);
+                        binderType.GetField("channelId")?.SetValue(newBinder, bindingRule.channelId);
+                        binderType.GetField("targetPropertyName")?.SetValue(newBinder, bindingRule.targetPropertyName);
+                        binderType.GetField("targetComponent")?.SetValue(newBinder, targetComp);
+                        binderType.GetMethod("InitializeBindings")?.Invoke(newBinder, null);
                     }
-                    else 
-                    {
-                        newBinder.targetComponent = this;
-                    }
-                    
-                    newBinder.InitializeBindings();
                 }
             }
-#endif
 
             // Siccome siamo in EditMode potremmo dover segnare la scena come "da salvare"
 #if UNITY_EDITOR
