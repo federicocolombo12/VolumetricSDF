@@ -1,0 +1,33 @@
+{
+  "name": "com.federicocolombo.volumetricsdf",
+  "version": "1.0.0",
+  "displayName": "Volumetric SDF Engine",
+  "description": "Real-time procedural implicit CSG raymarching, bounded modifier volumes, triplanar texturing, and 128^3 GPU voxelization with decoupled chromatic evaluation for Unity VFX Graph and Mobile XR (Meta Quest 3).",
+  "unity": "6000.0",
+  "unityRelease": "0b1",
+  "documentationUrl": "https://github.com/federicocolombo12/VolumetricSDF/blob/main/README.md",
+  "changelogUrl": "https://github.com/federicocolombo12/VolumetricSDF/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/federicocolombo12/VolumetricSDF/blob/main/LICENSE.md",
+  "keywords": [
+    "sdf",
+    "signed-distance-field",
+    "raymarching",
+    "voxelizer",
+    "csg",
+    "vfx-graph",
+    "procedural",
+    "medical-xr",
+    "meta-quest",
+    "compute-shader"
+  ],
+  "author": {
+    "name": "Federico Colombo",
+    "email": "chiccoclub5@gmail.com",
+    "url": "https://github.com/federicocolombo12"
+  },
+  "dependencies": {
+    "com.unity.render-pipelines.universal": "17.0.0",
+    "com.unity.visualeffectgraph": "17.0.0",
+    "com.unity.mathematics": "1.3.2"
+  }
+}

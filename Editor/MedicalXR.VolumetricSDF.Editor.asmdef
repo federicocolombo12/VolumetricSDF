@@ -1,0 +1,29 @@
+{
+    "name": "MedicalXR.VolumetricSDF.Editor",
+    "rootNamespace": "MedicalXR.RayMarching.Editor",
+    "references": [
+        "MedicalXR.VolumetricSDF",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.Editor",
+        "Unity.VisualEffectGraph.Runtime",
+        "Unity.VisualEffectGraph.Editor",
+        "Unity.Mathematics"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.federicocolombo.pulseengine",
+            "expression": "1.0.0",
+            "define": "PULSE_ENGINE_PRESENT"
+        }
+    ],
+    "noEngineReferences": false
+}

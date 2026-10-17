@@ -1,0 +1,32 @@
+# Unity Package .gitignore
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+
+# OS / Editor temporary backups
+*~
+!Documentation~/
+!Documentation~/**
+!Samples~/
+!Samples~/**
+
+# IDE & Solutions
+.vs/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+
+# OS Specific
+.DS_Store
+Thumbs.db
