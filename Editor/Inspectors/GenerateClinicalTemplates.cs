@@ -13,9 +13,14 @@ namespace MedicalXR.EditorScripts
         {
             EditorApplication.delayCall += () =>
             {
-                if (!System.IO.File.Exists("Assets/_Core/SDFTemplate/Calma.asset"))
+                // Only auto-generate if no clinical templates exist in project Assets
+                if (!System.IO.File.Exists(System.IO.Path.Combine(Application.dataPath, "_Core/SDFTemplate/Calma.asset")))
                 {
-                    GenerateAll();
+                    string[] projectGuids = AssetDatabase.FindAssets("t:SdfSceneTemplate", new[] { "Assets" });
+                    if (projectGuids == null || projectGuids.Length == 0)
+                    {
+                        GenerateAll();
+                    }
                 }
             };
         }
@@ -34,20 +39,32 @@ namespace MedicalXR.EditorScripts
             Debug.Log("[GenerateClinicalTemplates] I 3 Template Clinici ('Calma', 'Stress', 'Ipossia') sono stati generati con successo!");
         }
 
-        private static void EnsureDirectory(string path)
+        private static void EnsureDirectory(string relativeAssetPath)
         {
-            if (!AssetDatabase.IsValidFolder(path))
+            if (string.IsNullOrEmpty(relativeAssetPath)) return;
+
+            string fullPath = System.IO.Path.Combine(Application.dataPath, relativeAssetPath.StartsWith("Assets/") ? relativeAssetPath.Substring(7) : (relativeAssetPath.StartsWith("Assets") ? relativeAssetPath.Substring(6) : relativeAssetPath));
+            if (!System.IO.Directory.Exists(fullPath))
             {
-                string[] parts = path.Split('/');
-                string current = parts[0];
-                for (int i = 1; i < parts.Length; i++)
+                System.IO.Directory.CreateDirectory(fullPath);
+                AssetDatabase.Refresh();
+            }
+
+            if (!AssetDatabase.IsValidFolder(relativeAssetPath))
+            {
+                string[] parts = relativeAssetPath.Split(new char[] { '/', '\\' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 0)
                 {
-                    string next = current + "/" + parts[i];
-                    if (!AssetDatabase.IsValidFolder(next))
+                    string current = parts[0];
+                    for (int i = 1; i < parts.Length; i++)
                     {
-                        AssetDatabase.CreateFolder(current, parts[i]);
+                        string next = current + "/" + parts[i];
+                        if (!AssetDatabase.IsValidFolder(next))
+                        {
+                            AssetDatabase.CreateFolder(current, parts[i]);
+                        }
+                        current = next;
                     }
-                    current = next;
                 }
             }
         }
@@ -65,8 +82,10 @@ namespace MedicalXR.EditorScripts
             template.pulseDecaySpeed = 3.0f;
             template.shaderPulseParam = "_RWavePulse";
 
-            // Nodi SDF (Sfera + Fiore organico da Assets/_Core/VFX/3fiore2.asset)
-            var texFiore = AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/3fiore2.asset");
+            // Nodi SDF (Sfera + Fiore organico)
+            var texFiore = AssetDatabase.LoadAssetAtPath<Texture3D>("Packages/com.federicocolombo.volumetricsdf/Runtime/Textures/Baked3D/3fiore2.asset")
+                        ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/RayMarching/Textures/Baked3D/3fiore2.asset")
+                        ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/3fiore2.asset");
             
             template.nodes = new List<SdfNodeSnapshot>
             {
@@ -80,9 +99,15 @@ namespace MedicalXR.EditorScripts
                     pulseSensitivity = 0.5f,
                     localPosition = Vector3.zero,
                     localScale = Vector3.one,
-                    cyclicAmplitude = new Vector3(0.06f, 0f, 0.06f),
-                    cyclicFrequency = new Vector3(1f, 0f, 2f),
-                    cyclicAmplitudeMultiplier = 1f
+                    motionSnapshot = new SpatialMotionSnapshot
+                    {
+                        hasMotionDriver = true,
+                        pattern = MotionPattern.Lissajous,
+                        lissajousAmplitude = new Vector3(0.06f, 0f, 0.06f),
+                        lissajousFrequency = new Vector3(1f, 0f, 2f),
+                        amplitudeMultiplier = 1f,
+                        speedMultiplier = 1f
+                    }
                 },
                 new SdfNodeSnapshot
                 {
@@ -99,15 +124,15 @@ namespace MedicalXR.EditorScripts
                 }
             };
 
-            // Canali
+            // Canali (sourceType: 0=External, 1=Virtual; filterType: 0=None, 1=SineWavePulse)
             template.channels = new List<ChannelSnapshot>
             {
-                new ChannelSnapshot { id = "heart_rate", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(40, 180), outputRange = new Vector2(0.5f, 2f), smoothing = 0.5f },
-                new ChannelSnapshot { id = "spo2", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(85, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "hrv_rmssd", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "hrv_sdnn", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "perfusion_index", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(0.5f, 10f), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "heart_pulse", sourceType = SdfChannelSourceType.Virtual, filterType = ChannelFilterType.SineWavePulse, sourceChannelId = "heart_rate", inputRange = new Vector2(0, 1), outputRange = new Vector2(0, 1), smoothing = 0f }
+                new ChannelSnapshot { id = "heart_rate", sourceType = 0, inputRange = new Vector2(40, 180), outputRange = new Vector2(0.5f, 2f), smoothing = 0.5f },
+                new ChannelSnapshot { id = "spo2", sourceType = 0, inputRange = new Vector2(85, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "hrv_rmssd", sourceType = 0, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "hrv_sdnn", sourceType = 0, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "perfusion_index", sourceType = 0, inputRange = new Vector2(0.5f, 10f), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "heart_pulse", sourceType = 1, filterType = 1, sourceChannelId = "heart_rate", inputRange = new Vector2(0, 1), outputRange = new Vector2(0, 1), smoothing = 0f }
             };
 
             // Binders
@@ -129,8 +154,8 @@ namespace MedicalXR.EditorScripts
                 {
                     channelId = "hrv_rmssd",
                     targetGameObjectName = "SdfNode_CoreSphere",
-                    targetComponentType = typeof(SdfNode).FullName,
-                    targetPropertyName = "cyclicAmplitudeMultiplier",
+                    targetComponentType = typeof(ProceduralMotionDriver).FullName,
+                    targetPropertyName = "amplitudeMultiplier",
                     useLocalRemap = true,
                     localRemap = new Vector2(-10f, 10f) // Remap estremo come richiesto (-10 a 10)
                 },
@@ -193,8 +218,10 @@ namespace MedicalXR.EditorScripts
             template.pulseDecaySpeed = 5.0f;
             template.shaderPulseParam = "_RWavePulse";
 
-            // Nodi SDF (Sfera + Spuntoni da Assets/_Core/VFX/1spuntone.asset)
-            var texSpuntone = AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/1spuntone.asset");
+            // Nodi SDF (Sfera + Spuntoni)
+            var texSpuntone = AssetDatabase.LoadAssetAtPath<Texture3D>("Packages/com.federicocolombo.volumetricsdf/Runtime/Textures/Baked3D/1spuntone.asset")
+                           ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/RayMarching/Textures/Baked3D/1spuntone.asset")
+                           ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/1spuntone.asset");
 
             template.nodes = new List<SdfNodeSnapshot>
             {
@@ -226,12 +253,12 @@ namespace MedicalXR.EditorScripts
 
             template.channels = new List<ChannelSnapshot>
             {
-                new ChannelSnapshot { id = "heart_rate", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(40, 180), outputRange = new Vector2(0.5f, 2f), smoothing = 0.5f },
-                new ChannelSnapshot { id = "spo2", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(85, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "hrv_rmssd", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "hrv_sdnn", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "perfusion_index", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(0.5f, 10f), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "heart_pulse", sourceType = SdfChannelSourceType.Virtual, filterType = ChannelFilterType.SineWavePulse, sourceChannelId = "heart_rate", inputRange = new Vector2(0, 1), outputRange = new Vector2(0, 1), smoothing = 0f }
+                new ChannelSnapshot { id = "heart_rate", sourceType = 0, inputRange = new Vector2(40, 180), outputRange = new Vector2(0.5f, 2f), smoothing = 0.5f },
+                new ChannelSnapshot { id = "spo2", sourceType = 0, inputRange = new Vector2(85, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "hrv_rmssd", sourceType = 0, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "hrv_sdnn", sourceType = 0, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "perfusion_index", sourceType = 0, inputRange = new Vector2(0.5f, 10f), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "heart_pulse", sourceType = 1, filterType = 1, sourceChannelId = "heart_rate", inputRange = new Vector2(0, 1), outputRange = new Vector2(0, 1), smoothing = 0f }
             };
 
             var gradStress = new Gradient();
@@ -307,9 +334,13 @@ namespace MedicalXR.EditorScripts
             template.pulseDecaySpeed = 2.0f;
             template.shaderPulseParam = "_RWavePulse";
 
-            // Nodi SDF (Sfera + Curva/Infinito da Assets/_Core/VFX/4curvaunita2.asset)
-            var texCurva = AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/4curvaunita2.asset") 
-                         ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/6infinito2.asset");
+            // Nodi SDF (Sfera + Curva/Infinito)
+            var texCurva = AssetDatabase.LoadAssetAtPath<Texture3D>("Packages/com.federicocolombo.volumetricsdf/Runtime/Textures/Baked3D/4curvaunita2.asset")
+                        ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Packages/com.federicocolombo.volumetricsdf/Runtime/Textures/Baked3D/6infinito2.asset")
+                        ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/RayMarching/Textures/Baked3D/4curvaunita2.asset")
+                        ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/RayMarching/Textures/Baked3D/6infinito2.asset")
+                        ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/4curvaunita2.asset") 
+                        ?? AssetDatabase.LoadAssetAtPath<Texture3D>("Assets/_Core/VFX/6infinito2.asset");
 
             template.nodes = new List<SdfNodeSnapshot>
             {
@@ -323,9 +354,16 @@ namespace MedicalXR.EditorScripts
                     pulseSensitivity = 0.4f,
                     localPosition = Vector3.zero,
                     localScale = Vector3.one,
-                    cyclicAmplitude = new Vector3(0.08f, 0f, 0.08f), // Movimento circolare/oscillatorio
-                    cyclicFrequency = new Vector3(1f, 0f, 1f),
-                    cyclicAmplitudeMultiplier = 1f
+                    motionSnapshot = new SpatialMotionSnapshot
+                    {
+                        hasMotionDriver = true,
+                        pattern = MotionPattern.Orbit,
+                        orbitPlane = MotionOrbitPlane.XZ,
+                        orbitRadius = new Vector2(0.08f, 0.08f),
+                        orbitSpeed = 1f,
+                        amplitudeMultiplier = 1f,
+                        speedMultiplier = 1f
+                    }
                 },
                 new SdfNodeSnapshot
                 {
@@ -344,12 +382,12 @@ namespace MedicalXR.EditorScripts
 
             template.channels = new List<ChannelSnapshot>
             {
-                new ChannelSnapshot { id = "heart_rate", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(40, 180), outputRange = new Vector2(0.5f, 2f), smoothing = 0.5f },
-                new ChannelSnapshot { id = "spo2", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(75, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "hrv_rmssd", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "hrv_sdnn", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "perfusion_index", sourceType = SdfChannelSourceType.External, inputRange = new Vector2(0.5f, 10f), outputRange = new Vector2(0, 1), smoothing = 0.5f },
-                new ChannelSnapshot { id = "heart_pulse", sourceType = SdfChannelSourceType.Virtual, filterType = ChannelFilterType.SineWavePulse, sourceChannelId = "heart_rate", inputRange = new Vector2(0, 1), outputRange = new Vector2(0, 1), smoothing = 0f }
+                new ChannelSnapshot { id = "heart_rate", sourceType = 0, inputRange = new Vector2(40, 180), outputRange = new Vector2(0.5f, 2f), smoothing = 0.5f },
+                new ChannelSnapshot { id = "spo2", sourceType = 0, inputRange = new Vector2(75, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "hrv_rmssd", sourceType = 0, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "hrv_sdnn", sourceType = 0, inputRange = new Vector2(10, 100), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "perfusion_index", sourceType = 0, inputRange = new Vector2(0.5f, 10f), outputRange = new Vector2(0, 1), smoothing = 0.5f },
+                new ChannelSnapshot { id = "heart_pulse", sourceType = 1, filterType = 1, sourceChannelId = "heart_rate", inputRange = new Vector2(0, 1), outputRange = new Vector2(0, 1), smoothing = 0f }
             };
 
             template.propertyBinders = new List<PropertyBinderSnapshot>
@@ -358,8 +396,8 @@ namespace MedicalXR.EditorScripts
                 {
                     channelId = "hrv_rmssd",
                     targetGameObjectName = "SdfNode_HypoxicCore",
-                    targetComponentType = typeof(SdfNode).FullName,
-                    targetPropertyName = "cyclicAmplitudeMultiplier",
+                    targetComponentType = typeof(ProceduralMotionDriver).FullName,
+                    targetPropertyName = "amplitudeMultiplier",
                     useLocalRemap = true,
                     localRemap = new Vector2(-10f, 10f) // Remap estremo tra -10 e 10
                 },

@@ -585,6 +585,14 @@ namespace MedicalXR.RayMarching
 
             // 3. Gestione dei DataStreamPropertyBinder dinamici se PulseEngine e presente
             var binderType = System.Type.GetType("GenericDataStreaming.DataStreamPropertyBinder, PulseEngine.Runtime");
+            if (binderType == null)
+            {
+                foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    binderType = asm.GetType("GenericDataStreaming.DataStreamPropertyBinder");
+                    if (binderType != null) break;
+                }
+            }
             if (binderType != null)
             {
                 var allBinders = Object.FindObjectsByType(binderType, FindObjectsSortMode.None);

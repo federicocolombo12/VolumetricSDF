@@ -80,8 +80,8 @@ namespace MedicalXR.RayMarching
 
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("Procedural Spatial Motion", EditorStyles.boldLabel);
-            var node = (SdfNode)target;
-            var motionDriver = node != null ? node.GetComponent<ProceduralMotionDriver>() : null;
+            var targetNode = (SdfNode)target;
+            var motionDriver = targetNode != null ? targetNode.GetComponent<ProceduralMotionDriver>() : null;
             if (motionDriver != null)
             {
                 using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
@@ -105,9 +105,9 @@ namespace MedicalXR.RayMarching
             {
                 if (GUILayout.Button("+ Add Procedural Motion Driver"))
                 {
-                    if (node != null)
+                    if (targetNode != null)
                     {
-                        Undo.AddComponent<ProceduralMotionDriver>(node.gameObject);
+                        Undo.AddComponent<ProceduralMotionDriver>(targetNode.gameObject);
                     }
                 }
             }
