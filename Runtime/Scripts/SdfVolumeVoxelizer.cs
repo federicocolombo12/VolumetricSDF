@@ -82,20 +82,6 @@ namespace MedicalXR.RayMarching
             hasLoggedVfxBindings = false;
             lastVolumeSize = volumeSize;
             
-#if UNITY_EDITOR
-            if (voxelizerShader == null)
-            {
-                voxelizerShader = UnityEditor.AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/com.federicocolombo.volumetricsdf/Runtime/Shaders/SdfVolumeVoxelizer.compute");
-                if (voxelizerShader == null)
-                {
-                    voxelizerShader = UnityEditor.AssetDatabase.LoadAssetAtPath<ComputeShader>("Packages/com.federicocolombo.pulseengine/Runtime/VolumetricSDF/Shaders/SdfVolumeVoxelizer.compute");
-                }
-                if (voxelizerShader == null)
-                {
-                    voxelizerShader = UnityEditor.AssetDatabase.LoadAssetAtPath<ComputeShader>("Assets/_Core/RayMarching/Shaders/SdfVolumeVoxelizer.compute");
-                }
-            }
-#endif
             if (voxelizerShader != null)
             {
                 kernelIndex = voxelizerShader.FindKernel("CSMain");
@@ -317,10 +303,15 @@ namespace MedicalXR.RayMarching
                             break;
                     }
 
-                    // Considera l'espansione pulsante del battito cardiaco
+                    // Considera l'espansione pulsante del battito cardiaco ed eventuale moto procedurale
                     float pulseMargin = node.pulseSensitivity * 0.08f;
-                    float cyclicMargin = Mathf.Max(node.cyclicAmplitude.x, Mathf.Max(node.cyclicAmplitude.y, node.cyclicAmplitude.z));
-                    halfExtents += Vector3.one * (pulseMargin + cyclicMargin);
+                    float motionMargin = 0f;
+                    if (node.TryGetComponent<IMotionBoundsProvider>(out var motionBounds))
+                    {
+                        Vector3 disp = motionBounds.GetMaxDisplacement();
+                        motionMargin = Mathf.Max(disp.x, Mathf.Max(disp.y, disp.z));
+                    }
+                    halfExtents += Vector3.one * (pulseMargin + motionMargin);
 
                     // Calcola gli 8 vertici del bounding box del nodo nello spazio del volume
                     for (int sx = -1; sx <= 1; sx += 2)

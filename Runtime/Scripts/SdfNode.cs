@@ -64,47 +64,6 @@ namespace MedicalXR.RayMarching
         [Tooltip("Colore specifico di questa forma. Verrà trasmesso al VFX Graph per colorare le particelle in quest'area.")]
         public Color shapeColor = Color.cyan;
 
-        [Header("Cyclic Movement (Lissajous)")]
-        public Vector3 cyclicAmplitude = Vector3.zero;
-        public Vector3 cyclicFrequency = new Vector3(1f, 0f, 2f); // Frequenze per figura a 8
-        [Tooltip("Moltiplicatore dell'ampiezza, ideale da collegare a un DataStreamPropertyBinder (es. HRV)")]
-        public float cyclicAmplitudeMultiplier = 0f;
-
-        private Vector3 _basePosition;
-        private float _timeAccumulator;
-        private bool _isInitialized;
-
-        void Start()
-        {
-            if (Application.isPlaying)
-            {
-                _basePosition = transform.localPosition;
-                _isInitialized = true;
-            }
-        }
-
-        void Update()
-        {
-            if (!Application.isPlaying) return;
-
-            if (!_isInitialized)
-            {
-                _basePosition = transform.localPosition;
-                _isInitialized = true;
-            }
-
-            if (cyclicAmplitude.sqrMagnitude > 0)
-            {
-                _timeAccumulator += Time.deltaTime;
-                Vector3 offset = new Vector3(
-                    Mathf.Sin(_timeAccumulator * cyclicFrequency.x) * cyclicAmplitude.x,
-                    Mathf.Sin(_timeAccumulator * cyclicFrequency.y) * cyclicAmplitude.y,
-                    Mathf.Sin(_timeAccumulator * cyclicFrequency.z) * cyclicAmplitude.z
-                );
-                transform.localPosition = _basePosition + offset * cyclicAmplitudeMultiplier;
-            }
-        }
-
         [HideInInspector]
         public float currentPulse = 0.0f;
 

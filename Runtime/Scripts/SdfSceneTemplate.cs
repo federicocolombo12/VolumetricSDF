@@ -23,9 +23,117 @@ namespace MedicalXR.RayMarching
         public float blendSoftness = 0f;
         public Color shapeColor = Color.white;
         public float pulseSensitivity = 1.0f;
-        public Vector3 cyclicAmplitude = Vector3.zero;
-        public Vector3 cyclicFrequency = new Vector3(1f, 0f, 2f);
-        public float cyclicAmplitudeMultiplier = 0f;
+        public SpatialMotionSnapshot motionSnapshot = new SpatialMotionSnapshot();
+    }
+
+    [System.Serializable]
+    public class SpatialMotionSnapshot
+    {
+        public bool hasMotionDriver = false;
+        public MotionPattern pattern = MotionPattern.None;
+        public float speedMultiplier = 1.0f;
+        public float amplitudeMultiplier = 1.0f;
+        public float noiseTurbulence = 0.0f;
+        public float phaseOffset = 0.0f;
+
+        // Lissajous
+        public Vector3 lissajousAmplitude = new Vector3(0.06f, 0.06f, 0.06f);
+        public Vector3 lissajousFrequency = new Vector3(1f, 0f, 2f);
+        public Vector3 lissajousPhase = Vector3.zero;
+
+        // Orbit
+        public MotionOrbitPlane orbitPlane = MotionOrbitPlane.XZ;
+        public Vector2 orbitRadius = new Vector2(0.08f, 0.08f);
+        public float orbitSpeed = 1.0f;
+        public bool orbitClockwise = true;
+
+        // PingPong
+        public Vector3 pingPongAxis = Vector3.up;
+        public float pingPongDistance = 0.08f;
+        public float pingPongFrequency = 1.0f;
+        public bool pingPongSmoothEasing = true;
+
+        // PerlinDrift
+        public Vector3 driftAmplitude = new Vector3(0.05f, 0.05f, 0.05f);
+        public Vector3 driftSpeed = new Vector3(0.5f, 0.5f, 0.5f);
+        public int driftOctaves = 2;
+        public float driftSeed = 42.0f;
+
+        // Spiral
+        public MotionOrbitPlane spiralPlane = MotionOrbitPlane.XZ;
+        public float spiralRadius = 0.06f;
+        public float spiralSpeed = 1.0f;
+        public Vector3 spiralTravelAxis = Vector3.up;
+        public float spiralTravelDistance = 0.06f;
+        public float spiralTravelFrequency = 0.5f;
+
+        public static SpatialMotionSnapshot CaptureFrom(ProceduralMotionDriver driver)
+        {
+            if (driver == null || driver.pattern == MotionPattern.None) 
+                return new SpatialMotionSnapshot { hasMotionDriver = false };
+
+            return new SpatialMotionSnapshot
+            {
+                hasMotionDriver = true,
+                pattern = driver.pattern,
+                speedMultiplier = driver.speedMultiplier,
+                amplitudeMultiplier = driver.amplitudeMultiplier,
+                noiseTurbulence = driver.noiseTurbulence,
+                phaseOffset = driver.phaseOffset,
+                lissajousAmplitude = driver.lissajousAmplitude,
+                lissajousFrequency = driver.lissajousFrequency,
+                lissajousPhase = driver.lissajousPhase,
+                orbitPlane = driver.orbitPlane,
+                orbitRadius = driver.orbitRadius,
+                orbitSpeed = driver.orbitSpeed,
+                orbitClockwise = driver.orbitClockwise,
+                pingPongAxis = driver.pingPongAxis,
+                pingPongDistance = driver.pingPongDistance,
+                pingPongFrequency = driver.pingPongFrequency,
+                pingPongSmoothEasing = driver.pingPongSmoothEasing,
+                driftAmplitude = driver.driftAmplitude,
+                driftSpeed = driver.driftSpeed,
+                driftOctaves = driver.driftOctaves,
+                driftSeed = driver.driftSeed,
+                spiralPlane = driver.spiralPlane,
+                spiralRadius = driver.spiralRadius,
+                spiralSpeed = driver.spiralSpeed,
+                spiralTravelAxis = driver.spiralTravelAxis,
+                spiralTravelDistance = driver.spiralTravelDistance,
+                spiralTravelFrequency = driver.spiralTravelFrequency
+            };
+        }
+
+        public void ApplyTo(ProceduralMotionDriver driver)
+        {
+            if (driver == null) return;
+            driver.pattern = pattern;
+            driver.speedMultiplier = speedMultiplier;
+            driver.amplitudeMultiplier = amplitudeMultiplier;
+            driver.noiseTurbulence = noiseTurbulence;
+            driver.phaseOffset = phaseOffset;
+            driver.lissajousAmplitude = lissajousAmplitude;
+            driver.lissajousFrequency = lissajousFrequency;
+            driver.lissajousPhase = lissajousPhase;
+            driver.orbitPlane = orbitPlane;
+            driver.orbitRadius = orbitRadius;
+            driver.orbitSpeed = orbitSpeed;
+            driver.orbitClockwise = orbitClockwise;
+            driver.pingPongAxis = pingPongAxis;
+            driver.pingPongDistance = pingPongDistance;
+            driver.pingPongFrequency = pingPongFrequency;
+            driver.pingPongSmoothEasing = pingPongSmoothEasing;
+            driver.driftAmplitude = driftAmplitude;
+            driver.driftSpeed = driftSpeed;
+            driver.driftOctaves = driftOctaves;
+            driver.driftSeed = driftSeed;
+            driver.spiralPlane = spiralPlane;
+            driver.spiralRadius = spiralRadius;
+            driver.spiralSpeed = spiralSpeed;
+            driver.spiralTravelAxis = spiralTravelAxis;
+            driver.spiralTravelDistance = spiralTravelDistance;
+            driver.spiralTravelFrequency = spiralTravelFrequency;
+        }
     }
 
     [System.Serializable]
@@ -45,15 +153,13 @@ namespace MedicalXR.RayMarching
         public Color gizmoColor = new Color(1f, 0.6f, 0.1f, 0.35f);
     }
 
-    public enum SdfChannelSourceType { External = 0, InternalClock = 1, VirtualDerived = 2 }
-    public enum SdfChannelFilterType { None = 0, LowPass = 1, MovingAverage = 2, SpikeRejection = 3, SineWavePulse = 4 }
-
+#if PULSE_ENGINE_PRESENT
     [System.Serializable]
     public class ChannelSnapshot
     {
         public string id;
-        public SdfChannelSourceType sourceType = SdfChannelSourceType.External;
-        public SdfChannelFilterType filterType = SdfChannelFilterType.None;
+        public ChannelSourceType sourceType = ChannelSourceType.External;
+        public ChannelFilterType filterType = ChannelFilterType.None;
         public string sourceChannelId;
         public Vector2 inputRange = new Vector2(0f, 1f);
         public Vector2 outputRange = new Vector2(0f, 1f);
@@ -61,6 +167,21 @@ namespace MedicalXR.RayMarching
         public bool isMuted = false;
         public bool isSolo = false;
     }
+#else
+    [System.Serializable]
+    public class ChannelSnapshot
+    {
+        public string id;
+        public int sourceType = 0;
+        public int filterType = 0;
+        public string sourceChannelId;
+        public Vector2 inputRange = new Vector2(0f, 1f);
+        public Vector2 outputRange = new Vector2(0f, 1f);
+        public float smoothing = 0.5f;
+        public bool isMuted = false;
+        public bool isSolo = false;
+    }
+#endif
 
     [System.Serializable]
     public class PropertyBinderSnapshot
@@ -173,9 +294,7 @@ namespace MedicalXR.RayMarching
                             blendSoftness = n.blendSoftness,
                             shapeColor = n.shapeColor,
                             pulseSensitivity = n.pulseSensitivity,
-                            cyclicAmplitude = n.cyclicAmplitude,
-                            cyclicFrequency = n.cyclicFrequency,
-                            cyclicAmplitudeMultiplier = n.cyclicAmplitudeMultiplier
+                            motionSnapshot = SpatialMotionSnapshot.CaptureFrom(n.GetComponent<ProceduralMotionDriver>())
                         };
                         template.nodes.Add(snap);
                     }
@@ -242,8 +361,8 @@ namespace MedicalXR.RayMarching
                     template.channels.Add(new ChannelSnapshot
                     {
                         id = ch.id,
-                        sourceType = (SdfChannelSourceType)(int)ch.sourceType,
-                        filterType = (SdfChannelFilterType)(int)ch.filterType,
+                        sourceType = ch.sourceType,
+                        filterType = ch.filterType,
                         sourceChannelId = ch.sourceChannelId,
                         inputRange = ch.inputRange,
                         outputRange = ch.outputRange,
@@ -356,9 +475,28 @@ namespace MedicalXR.RayMarching
                         targetNode.blendSoftness = snap.blendSoftness;
                         targetNode.shapeColor = snap.shapeColor;
                         targetNode.pulseSensitivity = snap.pulseSensitivity;
-                        targetNode.cyclicAmplitude = snap.cyclicAmplitude;
-                        targetNode.cyclicFrequency = snap.cyclicFrequency;
-                        targetNode.cyclicAmplitudeMultiplier = snap.cyclicAmplitudeMultiplier;
+
+                        var existingDriver = targetNode.GetComponent<ProceduralMotionDriver>();
+                        if (snap.motionSnapshot != null && snap.motionSnapshot.hasMotionDriver)
+                        {
+                            if (existingDriver == null)
+                            {
+#if UNITY_EDITOR
+                                existingDriver = UnityEditor.Undo.AddComponent<ProceduralMotionDriver>(targetNode.gameObject);
+#else
+                                existingDriver = targetNode.gameObject.AddComponent<ProceduralMotionDriver>();
+#endif
+                            }
+                            snap.motionSnapshot.ApplyTo(existingDriver);
+                        }
+                        else if (existingDriver != null)
+                        {
+#if UNITY_EDITOR
+                            UnityEditor.Undo.DestroyObjectImmediate(existingDriver);
+#else
+                            UnityEngine.Object.Destroy(existingDriver);
+#endif
+                        }
 
                         matchedNodes.Add(targetNode);
                     }
@@ -501,8 +639,8 @@ namespace MedicalXR.RayMarching
                 DataStreamRegistry.Instance.channels = channels.Select(ch => new DataStreamChannel
                 {
                     id = ch.id,
-                    sourceType = (ChannelSourceType)(int)ch.sourceType,
-                    filterType = (ChannelFilterType)(int)ch.filterType,
+                    sourceType = ch.sourceType,
+                    filterType = ch.filterType,
                     sourceChannelId = ch.sourceChannelId,
                     inputRange = ch.inputRange,
                     outputRange = ch.outputRange,

@@ -79,10 +79,38 @@ namespace MedicalXR.RayMarching
             }
 
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Cyclic Movement (Lissajous)", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("cyclicAmplitude"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("cyclicFrequency"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("cyclicAmplitudeMultiplier"));
+            EditorGUILayout.LabelField("Procedural Spatial Motion", EditorStyles.boldLabel);
+            var node = (SdfNode)target;
+            var motionDriver = node != null ? node.GetComponent<ProceduralMotionDriver>() : null;
+            if (motionDriver != null)
+            {
+                using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
+                {
+                    EditorGUILayout.LabelField($"Active Pattern: {motionDriver.pattern}", EditorStyles.miniBoldLabel);
+                    EditorGUILayout.LabelField($"Speed: {motionDriver.speedMultiplier:F2}x | Amp: {motionDriver.amplitudeMultiplier:F2}x | Noise: {motionDriver.noiseTurbulence:F2}", EditorStyles.miniLabel);
+
+                    EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Configure Motion Driver"))
+                    {
+                        Selection.activeObject = motionDriver;
+                    }
+                    if (GUILayout.Button("Remove Driver", GUILayout.Width(110)))
+                    {
+                        Undo.DestroyObjectImmediate(motionDriver);
+                    }
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("+ Add Procedural Motion Driver"))
+                {
+                    if (node != null)
+                    {
+                        Undo.AddComponent<ProceduralMotionDriver>(node.gameObject);
+                    }
+                }
+            }
 
             serializedObject.ApplyModifiedProperties();
         }
