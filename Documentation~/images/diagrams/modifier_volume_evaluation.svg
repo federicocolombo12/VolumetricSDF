@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 380" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117" />
+      <stop offset="100%" stop-color="#161b22" />
+    </linearGradient>
+
+    <marker id="arrCyan" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+    </marker>
+    <marker id="arrEmerald" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#34d399" />
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#c084fc" />
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 8 5 L 0 9 z" fill="#f59e0b" />
+    </marker>
+  </defs>
+
+  <style>
+    .diagram-bg { fill: url(#bgGrad); stroke: #30363d; stroke-width: 1.5; rx: 12px; }
+    .card-panel { fill: #161b22; stroke: #30363d; stroke-width: 1.2; rx: 8px; }
+    .inner-panel { fill: #0d1117; stroke: #21262d; stroke-width: 1; rx: 6px; }
+    .kicker { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 13.5px; font-weight: 600; fill: #f0f6fc; }
+    .sub { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; font-weight: 400; fill: #8b949e; line-height: 1.4; }
+    .code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; font-size: 10px; fill: #58a6ff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="920" height="380" class="diagram-bg" />
+
+  <!-- Header -->
+  <g transform="translate(32, 34)">
+    <text x="0" y="0" class="kicker" fill="#38bdf8">LOCALIZED DOMAIN DEFORMATION PIPELINE</text>
+    <text x="0" y="22" class="title" style="font-size: 18px; font-weight: 700;">Bounded Modifier Volume Spatial Falloff &amp; GPU Execution</text>
+  </g>
+
+  <!-- STEP 1: SAMPLING POINT (X: 32, W: 180) -->
+  <g transform="translate(32, 86)">
+    <rect width="180" height="260" class="card-panel" />
+    <rect x="0" y="0" width="4" height="260" fill="#38bdf8" rx="2" />
+
+    <text x="16" y="24" class="kicker" fill="#38bdf8">STEP 01 • SAMPLING</text>
+    <text x="16" y="44" class="title">Ray / Voxel Query</text>
+    <text x="16" y="62" class="sub">Point p in 3D volume</text>
+
+    <g transform="translate(12, 78)">
+      <rect width="156" height="166" class="inner-panel" />
+      <text x="12" y="20" class="title" style="font-size: 11.5px; fill: #38bdf8;">Query Point p</text>
+      <text x="12" y="38" class="code">float3 p</text>
+      <text x="12" y="58" class="sub">Dispatched by:</text>
+      <text x="12" y="74" class="sub">• Sphere-trace ray</text>
+      <text x="12" y="90" class="sub">• Voxelizer thread</text>
+      <text x="12" y="112" class="sub">Evaluated against</text>
+      <text x="12" y="128" class="sub">scene hierarchy</text>
+      <text x="12" y="150" class="code" style="fill:#34d399;">Object-local space</text>
+    </g>
+  </g>
+
+  <!-- STEP 2: BOUNDING BOX CHECK (X: 236, W: 200) -->
+  <g transform="translate(236, 86)">
+    <rect width="200" height="260" class="card-panel" stroke="#f59e0b" stroke-dasharray="4 2" />
+    <rect x="0" y="0" width="4" height="260" fill="#f59e0b" rx="2" />
+
+    <text x="16" y="24" class="kicker" fill="#f59e0b">STEP 02 • SPATIAL CULL</text>
+    <text x="16" y="44" class="title">AABB Bounds Test</text>
+    <text x="16" y="62" class="sub">Accelerated branch check</text>
+
+    <g transform="translate(12, 78)">
+      <rect width="176" height="166" class="inner-panel" stroke="#f59e0b" stroke-width="0.8" />
+      <text x="12" y="20" class="title" style="font-size: 11.5px; fill: #f59e0b;">Inside Volume?</text>
+      <text x="12" y="38" class="code">abs(p_mod) &lt; halfSize</text>
+      <text x="12" y="62" class="sub" style="fill:#34d399; font-weight:600;">YES ➔ In Bounding Box</text>
+      <text x="12" y="78" class="sub">Proceed to smooth falloff</text>
+      <text x="12" y="94" class="sub">and inverse space warp</text>
+      
+      <line x1="12" y1="108" x2="164" y2="108" stroke="#21262d" stroke-width="1" />
+      
+      <text x="12" y="124" class="sub" style="fill:#8b949e; font-weight:600;">NO ➔ Outside Bounds</text>
+      <text x="12" y="140" class="code" style="fill:#38bdf8;">Skip deformation</text>
+      <text x="12" y="154" class="sub" style="font-size:9.5px; fill:#8b949e;">0 GPU cycles wasted</text>
+    </g>
+  </g>
+
+  <!-- STEP 3: FALLOFF & WARP (X: 460, W: 220) -->
+  <g transform="translate(460, 86)">
+    <rect width="220" height="260" class="card-panel" />
+    <rect x="0" y="0" width="4" height="260" fill="#c084fc" rx="2" />
+
+    <text x="16" y="24" class="kicker" fill="#c084fc">STEP 03 • WARP</text>
+    <text x="16" y="44" class="title">Inverse Space Warp</text>
+    <text x="16" y="62" class="sub">Smooth Hermite attenuation</text>
+
+    <g transform="translate(12, 78)">
+      <rect width="196" height="166" class="inner-panel" stroke="#c084fc" stroke-width="0.8" />
+      <text x="12" y="20" class="title" style="font-size: 11.5px; fill: #c084fc;">Falloff Weight w ∈ [0, 1]</text>
+      <text x="12" y="36" class="code">w = smoothstep(falloff, ...)</text>
+      
+      <text x="12" y="58" class="title" style="font-size: 11px; fill:#f0f6fc;">Warp Function p' = T⁻¹(p):</text>
+      <text x="12" y="74" class="sub">• <tspan class="code">Twist</tspan>: θ = y * angle * w</text>
+      <text x="12" y="90" class="sub">• <tspan class="code">Bend</tspan>: Curvature radius</text>
+      <text x="12" y="106" class="sub">• <tspan class="code">Taper</tspan>: Scale proportional y</text>
+      <text x="12" y="122" class="sub">• <tspan class="code">Noise</tspan>: 3D Simplex vector</text>
+      
+      <text x="12" y="148" class="code" style="fill:#34d399;">p' = Deformed Coordinates</text>
+    </g>
+  </g>
+
+  <!-- STEP 4: CSG EVALUATION (X: 704, W: 184) -->
+  <g transform="translate(704, 86)">
+    <rect width="184" height="260" class="card-panel" />
+    <rect x="0" y="0" width="4" height="260" fill="#34d399" rx="2" />
+
+    <text x="16" y="24" class="kicker" fill="#34d399">STEP 04 • EVAL</text>
+    <text x="16" y="44" class="title">CSG Evaluation</text>
+    <text x="16" y="62" class="sub">Implicit geometry eval</text>
+
+    <g transform="translate(12, 78)">
+      <rect width="160" height="166" class="inner-panel" stroke="#34d399" stroke-width="0.8" />
+      <text x="12" y="20" class="title" style="font-size: 11.5px; fill: #34d399;">Distance at p' or p</text>
+      <text x="12" y="38" class="code">d = SdfPrimitive(p')</text>
+      <text x="12" y="60" class="sub">Continuous C¹ smooth</text>
+      <text x="12" y="76" class="sub">polynomial blend:</text>
+      <text x="12" y="96" class="code" style="fill:#fbbf24;">smin(d1, d2, k)</text>
+      <text x="12" y="120" class="sub">Zero topological tearing</text>
+      <text x="12" y="136" class="sub">Infinite mathematical</text>
+      <text x="12" y="150" class="sub">resolution</text>
+    </g>
+  </g>
+
+  <!-- CONNECTORS -->
+  <path d="M 212 216 L 236 216" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrCyan)" />
+  <path d="M 436 216 L 460 216" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arrAmber)" />
+  <path d="M 680 216 L 704 216" fill="none" stroke="#c084fc" stroke-width="2" marker-end="url(#arrPurple)" />
+
+</svg>

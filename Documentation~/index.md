@@ -17,36 +17,9 @@ Originally developed as part of a Master's Thesis in Cinema and Media Engineerin
 
 ## Core Architectural Pillars
 
-```mermaid
-graph TD
-    subgraph CSG Hierarchy
-        A["SdfNode (Sphere, Box, Torus, Cylinder, Capsule, Baked3D)"]
-        B["SdfModifierVolume (Twist, Bend, Noise, Taper)"]
-    end
-
-    subgraph Master Controller
-        C["SdfGroupController (Sibling Index Preservation & TRS Matrices)"]
-    end
-
-    subgraph Dual Execution Pipelines
-        D["Direct Raymarcher Pipeline (BioSignalSDF.shader)"]
-        E["GPU Compute Voxelizer (SdfVolumeVoxelizer.compute)"]
-    end
-
-    subgraph Output & Physics
-        F["Solid Visual Surface (MatCap + Triplanar)"]
-        G["3D RenderTexture (RGBAHalf Distance + World Colors)"]
-        H["Unity VFX Graph (Conform to SDF & Particle Collision)"]
-    end
-
-    A --> C
-    B --> C
-    C --> D
-    C --> E
-    D --> F
-    E --> G
-    G --> H
-```
+<p align="center">
+  <img src="images/diagrams/volumetricsdf_pipeline.svg" width="100%" alt="VolumetricSDF GPU Voxelization and Procedural CSG Pipeline Architecture" />
+</p>
 
 ### 1. Constructive Solid Geometry (CSG) & Hierarchy Preservation
 * **Order-Independent CSG Evaluation**: Smooth Union, Smooth Subtraction, and Smooth Intersection evaluated sequentially according to the top-to-bottom order in the Unity Hierarchy (Sibling Index).

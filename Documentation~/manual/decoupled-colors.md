@@ -38,14 +38,9 @@ Result[id] = finalEvaluation;
 
 In **Unity VFX Graph**, particles query the volume texture using their world position converted into normalized UVW texture coordinates:
 
-```mermaid
-graph LR
-    P["Particle Position (PositionWS)"] --> M["World-to-Volume Matrix TRS"]
-    M --> UVW["Normalized UVW Coordinate (0.0 to 1.0)"]
-    UVW --> S["Sample Texture3D Block"]
-    S --> A["Alpha: Distance -> Conform to SDF Force"]
-    S --> RGB["RGB: Chromatic Vector -> Set Particle Color"]
-```
+<p align="center">
+  <img src="../images/diagrams/decoupled_colors_sampling.svg" width="100%" alt="Decoupled 3D Texture Evaluation in Unity VFX Graph" />
+</p>
 
 <p align="center">
   <img src="../images/decoupled_colors_demo.gif" width="80%" alt="Decoupled Per-Node Colors" />

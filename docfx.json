@@ -23,8 +23,8 @@
     "globalMetadata": {
       "_appTitle": "VolumetricSDF | Real-Time CSG & GPU Voxelizer Engine",
       "_appName": "VolumetricSDF",
-      "_appLogoPath": "images/sdf_volume_voxelizer_inspector.png",
-      "_appFaviconPath": "images/sdf_volume_voxelizer_inspector.png",
+      "_appLogoPath": "images/sdf_logo.svg",
+      "_appFaviconPath": "images/sdf_logo.svg",
       "_enableSearch": true,
       "_gitContribute": {
         "repo": "https://github.com/federicocolombo12/VolumetricSDF",

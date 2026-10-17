@@ -1,31 +1,14 @@
 # GPU Voxelizer & VFX Graph Pipeline
 
-The **GPU Voxelizer** (`SdfVolumeVoxelizer`) is the bridge between PulseEngine's mathematical Signed Distance Fields and **Unity Visual Effect Graph (VFX Graph)**. It compiles dynamic CSG operations and modifier warps into a real-time **3D RenderTexture**, allowing massive particle systems (hundreds of thousands of particles) to conform, collide, and flow across procedural volumes at high framerates.
+The **GPU Voxelizer** (`SdfVolumeVoxelizer`) is the bridge between VolumetricSDF's procedural implicit geometry and **Unity Visual Effect Graph (VFX Graph)**. It compiles dynamic CSG operations and modifier warps into a real-time **3D RenderTexture**, allowing massive particle systems (hundreds of thousands of particles) to conform, collide, and flow across procedural volumes at high framerates.
 
 ---
 
 ## 1. System Pipeline Overview
 
-```mermaid
-graph LR
-    subgraph CPU Hierarchy
-        Controller[SdfGroupController]
-        Nodes[SdfNode Primitives]
-        Modifiers[SdfModifierVolumes]
-    end
-
-    subgraph GPU Pipeline
-        Compute[SdfVolumeVoxelizer.compute]
-        Tex3D[(3D RenderTexture RGBAHalf)]
-        VFX[Unity VFX Graph]
-    end
-
-    Controller -->|Pack Parameters| Compute
-    Nodes -->|Pack Parameters| Compute
-    Modifiers -->|Pack Parameters| Compute
-    Compute -->|Dispatch 3D Grid| Tex3D
-    Tex3D -->|Sample Distance & Color| VFX
-```
+<p align="center">
+  <img src="../../images/diagrams/volumetricsdf_pipeline.svg" width="100%" alt="GPU Voxelizer and VFX Graph Pipeline" />
+</p>
 
 <p align="center">
   <img src="../../images/vfx_swarm_adhesion.gif" width="75%" alt="GPU Particle Swarm Adhesion to Volumetric SDF" />

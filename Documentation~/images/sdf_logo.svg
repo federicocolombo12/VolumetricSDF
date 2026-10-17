@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <defs>
+    <linearGradient id="sdfGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+  <rect width="36" height="36" rx="8" fill="#0D1117" stroke="#30363D" stroke-width="1.5" />
+  <!-- Isometric 3D Voxel Box / CSG Fusion -->
+  <path d="M 18 8 L 29 14 L 29 24 L 18 30 L 7 24 L 7 14 Z" 
+        fill="none" 
+        stroke="url(#sdfGrad)" 
+        stroke-width="2" 
+        stroke-linejoin="round" />
+  <path d="M 18 8 L 18 30 M 18 19 L 29 14 M 18 19 L 7 14" 
+        fill="none" 
+        stroke="url(#sdfGrad)" 
+        stroke-width="1.5" 
+        stroke-linecap="round" />
+  <circle cx="18" cy="19" r="3.5" fill="#06B6D4" />
+</svg>

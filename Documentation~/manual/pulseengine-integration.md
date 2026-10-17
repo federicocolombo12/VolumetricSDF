@@ -6,31 +6,9 @@ While **VolumetricSDF** functions as a fully self-contained procedural implicit 
 
 ## 1. Architectural Division of Responsibilities
 
-```mermaid
-graph LR
-    subgraph PulseEngine (Telemetry Engine)
-        A["Hardware / Network Sensors (OSC, UDP, BLE)"]
-        B["DataStreamRegistry (Zero-GC Bus)"]
-        C["DAW Mixer Console (Faders, Mute/Solo, Filtering)"]
-        D["DataStreamPropertyBinder / DataStreamColorBinder"]
-    end
-
-    subgraph VolumetricSDF (Geometry Engine)
-        E["SdfGroupController (CSG Hierarchy)"]
-        F["SdfModifierVolume (Force-Fields)"]
-        G["SdfVolumeVoxelizer (128³ Compute Grid)"]
-        H["Unity VFX Graph (Particle Swarm)"]
-    end
-
-    A --> B
-    B --> C
-    C --> D
-    D -- "Float/Color Streams" --> E
-    D -- "Torsion/Noise Streams" --> F
-    E --> G
-    F --> G
-    G --> H
-```
+<p align="center">
+  <img src="../../images/diagrams/companion_integration_bridge.svg" width="100%" alt="Modular Companion Integration Topology between PulseEngine and VolumetricSDF" />
+</p>
 
 | Package | Core Responsibility | Output Artifact |
 | :--- | :--- | :--- |

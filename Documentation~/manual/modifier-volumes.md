@@ -1,6 +1,6 @@
 # Standalone Modifier Volumes (Spatial Domain Warping)
 
-Rather than attaching mathematical distortions (twists, bends, noise) to individual nodes, PulseEngine adopts a **Standalone Modifier Volume** architecture (inspired by volume modifiers in MudBun and Houdini). 
+Rather than attaching mathematical distortions (twists, bends, noise) to individual nodes, VolumetricSDF adopts a **Standalone Modifier Volume** architecture (inspired by volume modifiers in MudBun and Houdini). 
 
 Modifier volumes exist as independent GameObjects in 3D space with dedicated position, rotation, and bounding bounds. They act like **localized spatial force fields**, warping any geometric primitives that intersect their volume.
 
@@ -9,21 +9,16 @@ Modifier volumes exist as independent GameObjects in 3D space with dedicated pos
 ## 1. Why Standalone Volumes?
 
 * **Spatial Locality**: You can place a twist modifier strictly across the aortic arch of a heart or the waist of a character without distorting the rest of the body.
-* **Decoupled Animation**: Modifiers can be translated, rotated, and modulated dynamically (e.g., connected to telemetry via `DataStreamPropertyBinder`) without modifying the underlying geometric node hierarchy.
+* **Decoupled Animation**: Modifiers can be translated, rotated, and modulated dynamically (e.g., connected to telemetry via `PulseEngine`'s `DataStreamPropertyBinder` or custom scripts) without modifying the underlying geometric node hierarchy.
 * **Falloff Margins**: Every volume features a smooth outer falloff margin to prevent abrupt geometric clipping or discontinuous topological tearing.
 
 ---
 
 ## 2. Supported Deformation Operations
 
-```mermaid
-graph TD
-    P[Sampling Point p] --> ModCheck{Inside Modifier Volume?}
-    ModCheck -- Yes --> Falloff[Compute Falloff Weight w based on distance to core box]
-    Falloff --> Deform[Apply Inverse Space Warp p' = InverseTransform(p)]
-    Deform --> Eval[Evaluate CSG Primitives at p']
-    ModCheck -- No --> EvalDirect[Evaluate CSG Primitives at p]
-```
+<p align="center">
+  <img src="../images/diagrams/modifier_volume_evaluation.svg" width="100%" alt="Bounded Modifier Volume Spatial Falloff and GPU Execution" />
+</p>
 
 ### 1. Twist (Torsional Contortion)
 Twists 3D space along the local Y-axis proportional to height and angle:
