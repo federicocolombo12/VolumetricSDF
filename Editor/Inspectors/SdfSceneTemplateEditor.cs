@@ -50,10 +50,16 @@ namespace MedicalXR.EditorScripts
                 if (EditorUtility.DisplayDialog("Sovrascrivi Template", $"Sei sicuro di voler catturare la scena corrente e sovrascrivere '{template.name}'?", "Sì, Cattura", "Annulla"))
                 {
                     Undo.RecordObject(template, "Capture Scene into Template");
-                    template.CaptureFromScene();
-                    EditorUtility.SetDirty(template);
-                    AssetDatabase.SaveAssets();
-                    Debug.Log($"[SdfSceneTemplate] Scena catturata con successo nel template '{template.name}'!");
+                    string preservedName = template.name;
+                    var snapshot = SdfSceneTemplate.CaptureCurrentScene(preservedName);
+                    if (snapshot != null)
+                    {
+                        EditorUtility.CopySerialized(snapshot, template);
+                        template.name = preservedName;
+                        EditorUtility.SetDirty(template);
+                        AssetDatabase.SaveAssets();
+                        Debug.Log($"[SdfSceneTemplate] Scena catturata con successo nel template '{template.name}'!");
+                    }
                 }
             }
             if (GUILayout.Button("🔍 Seleziona Volume in Scena", GUILayout.Height(26)))
