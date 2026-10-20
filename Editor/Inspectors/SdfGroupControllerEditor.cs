@@ -5,8 +5,8 @@ namespace MedicalXR.RayMarching
 {
     /// <summary>
     /// Ispettore personalizzato per SdfGroupController.
-    /// Aggiunge un pulsante nell'ispettore di Unity per inserire dinamicamente
-    /// nuovi nodi figli (SdfNode) e configurare le loro forme di default.
+    /// Gestisce l'ordinamento CSG top-to-bottom, la creazione rapida di nodi e volumi modificatori,
+    /// e l'applicazione diretta dei Template SdfSceneTemplate.
     /// </summary>
     [CustomEditor(typeof(SdfGroupController))]
     public class SdfGroupControllerEditor : Editor
@@ -14,14 +14,25 @@ namespace MedicalXR.RayMarching
         private SdfShapeType shapeTypeToAdd = SdfShapeType.Sphere;
         private SdfModifierType modifierTypeToAdd = SdfModifierType.Twist;
         private SdfModifierScope modifierScopeToAdd = SdfModifierScope.AllNodesInVolume;
-        private SdfEffectTemplate templateToApply;
+        private SdfSceneTemplate templateToApply;
 
         public override void OnInspectorGUI()
         {
+            SdfGroupController controller = (SdfGroupController)target;
+
+            // Visual Fallback Warning
+            if (!controller.renderSolidMesh)
+            {
+                var vox = controller.GetComponent<SdfVolumeVoxelizer>();
+                bool hasVfx = (vox != null && vox.targetVfxGraph != null && vox.targetVfxGraph.gameObject.activeInHierarchy);
+                if (!hasVfx)
+                {
+                    EditorGUILayout.HelpBox("⚠️ 'renderSolidMesh' è disabilitato e nessun VFX Graph è assegnato. La mesh solida è mantenuta attiva come fallback di sicurezza per evitare lo schermo nero.", MessageType.Warning);
+                }
+            }
+
             // Disegna l'ispettore standard per le proprietà pubbliche
             DrawDefaultInspector();
-
-            SdfGroupController controller = (SdfGroupController)target;
 
             EditorGUILayout.Space(15);
             EditorGUILayout.LabelField("🎬 CSG Sequence & Blend Order (MudBun Top-to-Bottom)", EditorStyles.boldLabel);
@@ -97,16 +108,24 @@ namespace MedicalXR.RayMarching
             }
 
             EditorGUILayout.Space(15);
-            EditorGUILayout.LabelField("Template Settings", EditorStyles.boldLabel);
-            templateToApply = (SdfEffectTemplate)EditorGUILayout.ObjectField("Template", templateToApply, typeof(SdfEffectTemplate), false);
-            if (GUILayout.Button("Apply Template"))
+            EditorGUILayout.LabelField("🔮 SdfSceneTemplate Quick Switch", EditorStyles.boldLabel);
+            templateToApply = (SdfSceneTemplate)EditorGUILayout.ObjectField("Template", templateToApply, typeof(SdfSceneTemplate), false);
+            if (GUILayout.Button("🎬 Applica Template Selezionato", GUILayout.Height(28)))
             {
                 if (templateToApply != null)
                 {
-                    controller.ApplyTemplate(templateToApply);
+                    templateToApply.ApplyToScene();
                     EditorUtility.SetDirty(controller);
                 }
             }
+
+            EditorGUILayout.Space(4);
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Calma", EditorStyles.miniButtonLeft)) LoadPreset("Calma.asset");
+            if (GUILayout.Button("Stress", EditorStyles.miniButtonMid)) LoadPreset("Stress.asset");
+            if (GUILayout.Button("Ipossia", EditorStyles.miniButtonMid)) LoadPreset("Ipossia.asset");
+            if (GUILayout.Button("BoubaKiki", EditorStyles.miniButtonRight)) LoadPreset("BoubaKiki.asset");
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space(15);
             EditorGUILayout.LabelField("Procedural Node Creator", EditorStyles.boldLabel);
@@ -161,6 +180,27 @@ namespace MedicalXR.RayMarching
                 EditorUtility.SetDirty(controller);
             }
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void LoadPreset(string fileName)
+        {
+            string path = $"Packages/com.federicocolombo.volumetricsdf/Runtime/Templates/{fileName}";
+            var preset = AssetDatabase.LoadAssetAtPath<SdfSceneTemplate>(path);
+            if (preset == null)
+            {
+                path = $"Assets/_Core/SDFTemplate/{fileName}";
+                preset = AssetDatabase.LoadAssetAtPath<SdfSceneTemplate>(path);
+            }
+
+            if (preset != null)
+            {
+                preset.ApplyToScene();
+                Debug.Log($"[SdfGroupControllerEditor] Preset '{fileName}' applicato con successo!");
+            }
+            else
+            {
+                Debug.LogWarning($"[SdfGroupControllerEditor] Preset '{fileName}' non trovato.");
+            }
         }
     }
 }

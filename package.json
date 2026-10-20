@@ -1,6 +1,6 @@
 {
   "name": "com.federicocolombo.volumetricsdf",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "Volumetric SDF Engine",
   "description": "Real-time procedural implicit CSG raymarching, bounded modifier volumes, triplanar texturing, and 128^3 GPU voxelization with decoupled chromatic evaluation for Unity VFX Graph and Mobile XR (Meta Quest 3).",
   "unity": "6000.0",
@@ -29,5 +29,12 @@
     "com.unity.render-pipelines.universal": "17.0.0",
     "com.unity.visualeffectgraph": "17.0.0",
     "com.unity.mathematics": "1.3.2"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "01 Volumetric SDF Showcase",
+      "description": "Standalone ready-to-run scene showcasing procedural CSG raymarching, MudBun modifier volumes, ProceduralMotionDriver kinematics, and real-time GPU voxelization for VFX Graph.",
+      "path": "Samples~/01_VolumetricSDFShowcase"
+    }
+  ]
 }
