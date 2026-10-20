@@ -24,7 +24,7 @@ namespace MedicalXR.RayMarching
         public string targetPropertyName;
     }
 
-    [CreateAssetMenu(fileName = "New Sdf Template", menuName = "MedicalXR/SDF Template")]
+    [CreateAssetMenu(fileName = "New Sdf Template", menuName = "VolumetricSDF/SDF Template (Legacy)")]
     public class SdfEffectTemplate : ScriptableObject
     {
         [Header("Bio-Signal Overrides")]

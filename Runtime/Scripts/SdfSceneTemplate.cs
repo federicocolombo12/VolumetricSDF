@@ -191,7 +191,7 @@ namespace MedicalXR.RayMarching
     /// Nodi SDF, parametri del Voxelizer, canali del DataStreamRegistry
     /// e tutti i binder (inclusi Local Remap e Gradienti di colore).
     /// </summary>
-    [CreateAssetMenu(fileName = "New Scene Template", menuName = "MedicalXR/Scene Template (Full)")]
+    [CreateAssetMenu(fileName = "New Scene Template", menuName = "VolumetricSDF/Scene Template (Full)")]
     public class SdfSceneTemplate : ScriptableObject
     {
         [Header("Volume & Optimization")]

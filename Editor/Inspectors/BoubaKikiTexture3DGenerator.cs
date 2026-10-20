@@ -32,7 +32,7 @@ namespace MedicalXR.EditorScripts
         [Range(0.25f, 0.48f)]
         public float kikiSpikeLength = 0.42f;
 
-        [MenuItem("MedicalXR/Tools/Bouba-Kiki 3D Texture Generator")]
+        [MenuItem("VolumetricSDF/Tools/Bouba-Kiki 3D Texture Generator", priority = 11)]
         public static void OpenWindow()
         {
             var win = GetWindow<BoubaKikiTexture3DGenerator>("Bouba-Kiki SDF Baker");

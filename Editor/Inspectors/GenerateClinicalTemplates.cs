@@ -25,7 +25,7 @@ namespace MedicalXR.EditorScripts
             };
         }
 
-        [MenuItem("MedicalXR/Tools/Generate Clinical Scene Templates")]
+        [MenuItem("VolumetricSDF/Tools/Generate Clinical Scene Templates", priority = 10)]
         public static void GenerateAll()
         {
             EnsureDirectory("Assets/_Core/SDFTemplate");

@@ -1,6 +1,6 @@
 {
   "name": "com.federicocolombo.volumetricsdf",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "displayName": "Volumetric SDF Engine",
   "description": "Real-time procedural implicit CSG raymarching, bounded modifier volumes, triplanar texturing, and 128^3 GPU voxelization with decoupled chromatic evaluation for Unity VFX Graph and Mobile XR (Meta Quest 3).",
   "unity": "6000.0",

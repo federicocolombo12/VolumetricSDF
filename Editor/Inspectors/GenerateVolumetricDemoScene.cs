@@ -12,7 +12,7 @@ namespace MedicalXR.EditorScripts
 {
     public static class GenerateVolumetricDemoScene
     {
-        [MenuItem("MedicalXR/Generate Volumetric SDF Demo Scene", priority = 10)]
+        [MenuItem("VolumetricSDF/Generate Volumetric SDF Demo Scene", priority = 1)]
         public static void GenerateDemoScene()
         {
             // 1. Crea una nuova scena vuota
