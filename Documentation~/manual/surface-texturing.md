@@ -11,7 +11,7 @@ VolumetricSDF incorporates an advanced implicit texturing pipeline featuring **O
 Triplanar mapping samples 2D textures along the three principal Cartesian axes ($X, Y, Z$) and blends them based on the surface normal $\mathbf{N}$:
 
 <p align="center">
-  <img src="../../images/diagrams/triplanar_projection_pipeline.svg" width="100%" alt="Object-Space Triplanar Projection and Surface Normal Normalization" />
+  <img src="../images/diagrams/triplanar_projection_pipeline.svg" width="100%" alt="Object-Space Triplanar Projection and Surface Normal Normalization" />
 </p>
 
 ### Exponential Weight Normalization
@@ -39,7 +39,7 @@ Because the surface gradient is inherently tangent to the geometric normal $\mat
 
 ## 3. View-Space MatCap Shading
 <p align="center">
-  <img src="../../images/biosignal_sdf_material_inspector.png" width="70%" alt="BioSignalSDF Material Inspector with Triplanar, Bump, and MatCap" />
+  <img src="../images/biosignal_sdf_material_inspector.png" width="70%" alt="BioSignalSDF Material Inspector with Triplanar, Bump, and MatCap" />
   <br><em>BioSignalSDF material inspector displaying raymarching steps, triplanar albedo tiling, Mikkelsen bump strength, and view-space MatCap blending.</em>
 </p>
 

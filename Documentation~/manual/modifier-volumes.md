@@ -42,7 +42,7 @@ $$\mathbf{p}' = \mathbf{p} + \nabla \text{Noise}(\mathbf{p} \cdot \text{frequenc
 ## 3. Double Wireframe Scene Gizmo
 
 <p align="center">
-  <img src="../../images/sdf_volume_scene_gizmo.png" width="65%" alt="Dual Wireframe Scene Gizmo and Volumetric Bounds" />
+  <img src="../images/sdf_volume_scene_gizmo.png" width="65%" alt="Dual Wireframe Scene Gizmo and Volumetric Bounds" />
   <br><em>Scene View visualization showing the orange volumetric bounding box and inner node boundary gizmos.</em>
 </p>
 

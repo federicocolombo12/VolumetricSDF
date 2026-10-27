@@ -7,7 +7,7 @@ While **VolumetricSDF** functions as a fully self-contained procedural implicit 
 ## 1. Architectural Division of Responsibilities
 
 <p align="center">
-  <img src="../../images/diagrams/companion_integration_bridge.svg" width="100%" alt="Modular Companion Integration Topology between PulseEngine and VolumetricSDF" />
+  <img src="../images/diagrams/companion_integration_bridge.svg" width="100%" alt="Modular Companion Integration Topology between PulseEngine and VolumetricSDF" />
 </p>
 
 | Package | Core Responsibility | Output Artifact |

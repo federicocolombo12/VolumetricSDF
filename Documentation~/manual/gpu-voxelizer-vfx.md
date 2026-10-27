@@ -7,11 +7,11 @@ The **GPU Voxelizer** (`SdfVolumeVoxelizer`) is the bridge between VolumetricSDF
 ## 1. System Pipeline Overview
 
 <p align="center">
-  <img src="../../images/diagrams/volumetricsdf_pipeline.svg" width="100%" alt="GPU Voxelizer and VFX Graph Pipeline" />
+  <img src="../images/diagrams/volumetricsdf_pipeline.svg" width="100%" alt="GPU Voxelizer and VFX Graph Pipeline" />
 </p>
 
 <p align="center">
-  <img src="../../images/vfx_swarm_adhesion.gif" width="75%" alt="GPU Particle Swarm Adhesion to Volumetric SDF" />
+  <img src="../images/vfx_swarm_adhesion.gif" width="75%" alt="GPU Particle Swarm Adhesion to Volumetric SDF" />
   <br><em>VFX Graph particles conforming and advecting dynamically over real-time CSG distance volume.</em>
 </p>
 
@@ -39,8 +39,8 @@ In VFX Graph, connecting `SdfVolumeSize` directly to the `FieldTransform.size` p
 ## 3. Configuring VFX Graph Blocks
 
 <p align="center">
-  <img src="../../images/vfx_graph_blackboard.png" width="45%" alt="VFX Graph Blackboard Properties" />
-  <img src="../../images/vfx_graph_sdf_blocks.png" width="45%" alt="VFX Graph SDF Position and Attractor Blocks" />
+  <img src="../images/vfx_graph_blackboard.png" width="45%" alt="VFX Graph Blackboard Properties" />
+  <img src="../images/vfx_graph_sdf_blocks.png" width="45%" alt="VFX Graph SDF Position and Attractor Blocks" />
   <br><em>Left: Exposed Blackboard parameters. Right: Set Position Shape (SDF Surface) and Attractor Shape (Stick Distance 0.08m, Attraction Force 25, Stick Force 35).</em>
 </p>
 
@@ -80,7 +80,7 @@ Raymarching solid surfaces involves calculating ray steps for every pixel on the
 ## 5. Decoupled Per-Node Colors & VFX Blending
 
 <p align="center">
-  <img src="../../images/decoupled_colors_demo.gif" width="55%" alt="Decoupled Per-Node Particle Colors in VFX Graph" />
+  <img src="../images/decoupled_colors_demo.gif" width="55%" alt="Decoupled Per-Node Particle Colors in VFX Graph" />
   <br><em>In-Engine capture: Two distinct CSG primitives (Infinity loop in magenta, Sphere in cyan) retaining decoupled chromatic identities while blending smoothly in the overlap region.</em>
 </p>
 
@@ -97,7 +97,7 @@ In complex multi-node organ morphologies, different biological structures requir
 ## 6. Inspector Reference: `SdfVolumeVoxelizer`
 
 <p align="center">
-  <img src="../../images/sdf_volume_voxelizer_inspector.png" width="70%" alt="SdfVolumeVoxelizer Inspector" />
+  <img src="../images/sdf_volume_voxelizer_inspector.png" width="70%" alt="SdfVolumeVoxelizer Inspector" />
 </p>
 
 | Property | Type | Default | Description |

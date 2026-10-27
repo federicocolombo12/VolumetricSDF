@@ -23,7 +23,7 @@ The `MedicalXRBenchmarkRunner` executes a rigorous 13-stage profiling routine:
 ## 2. Empirical Benchmark Results (Automated Suite Execution)
 
 <p align="center">
-  <img src="../../images/daw_benchmark_results_table.png" width="100%" alt="Automated Benchmark Execution Results Table" />
+  <img src="../images/daw_benchmark_results_table.png" width="100%" alt="Automated Benchmark Execution Results Table" />
   <br><em>Execution results from the DAW Mixer Benchmark runner across 13 test conditions verifying 72Hz/90Hz XR constraints.</em>
 </p>
 

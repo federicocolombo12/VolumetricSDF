@@ -46,4 +46,23 @@ Originally developed as part of a Master's Thesis in Cinema and Media Engineerin
 
 VolumetricSDF is designed as a standalone procedural geometry and voxelizer engine. To drive its parameters dynamically using real-time biometric sensors (ECG, SpO2, HRV via OSC/UDP/WebSockets) and a virtual hardware mixing desk, pair it with:
 
-👉 **[PulseEngine](https://github.com/federicocolombo12/PulseEngine)** (`com.federicocolombo.pulseengine`)
+👉 **[PulseEngine](https://github.com/federicocolombo12/PulseEngine)** (`com.federicocolombo.pulseengine`) • **[PulseEngine Documentation ↗](https://federicocolombo12.github.io/PulseEngine/)**
+
+---
+
+## Document Navigation Guide
+
+* [Installation & Setup](installation-and-setup.md): Requirements, UPM installation, and URP/Vulkan configuration.
+* [Getting Started](getting-started.md): Quickstart creating an SDF Volume, CSG nodes, and connecting VFX Graph.
+* **Procedural Modeling & CSG**:
+  * [Primitives & CSG Operations](manual/primitives-and-csg.md)
+  * [Bounded Modifier Volumes](manual/modifier-volumes.md)
+  * [Triplanar Texturing & MatCaps](manual/surface-texturing.md)
+  * [Bouba-Kiki Morphological Continuum](manual/bouba-kiki-continuum.md)
+* **GPU Voxelizer & VFX Graph**:
+  * [GPU Voxelizer Pipeline](manual/gpu-voxelizer-vfx.md)
+  * [Decoupled Chromatic Evaluation](manual/decoupled-colors.md)
+* **Performance & Optimization**:
+  * [Meta Quest 3 Profiling & Fill-Rate Decoupling](manual/quest3-profiling.md)
+* **Companion Integrations**:
+  * [Driving VolumetricSDF with PulseEngine](manual/pulseengine-integration.md)
