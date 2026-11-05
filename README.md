@@ -144,6 +144,10 @@ Grounded in cross-modal cognitive psychology (Wolfgang Köhler 1929, Ramachandra
 
 * Includes custom editor baking tool (**`BoubaKikiTexture3DGenerator`**) accessible via **MedicalXR > Tools > Bouba-Kiki 3D Texture Generator** to bake $32^3$ to $128^3$ volumetric assets (`.asset`) directly into the project.
 
+> [!TIP]
+> **Live Telemetry & Interoceptive Walkthrough**:  
+> To observe this continuous morphological transition driven in real time by biological heart rate and HRV telemetry ($137 \to 61\text{ BPM}$), see the **[PulseEngine Clinical Biofeedback Showcase](https://github.com/federicocolombo12/PulseEngine#readme)**.
+
 ---
 
 ### 🔬 6. Morten Mikkelsen Triplanar Texturing & MatCaps
