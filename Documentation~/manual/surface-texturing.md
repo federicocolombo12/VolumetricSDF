@@ -16,8 +16,14 @@ Triplanar mapping samples 2D textures along the three principal Cartesian axes (
 
 ### Exponential Weight Normalization
 Conventional triplanar blending using linear weights produces washed-out diagonal transitions. VolumetricSDF utilizes exponential blending with a threshold:
-$$w_i = \max(0.0, |N_i| - 0.2)^4, \quad i \in \{x, y, z\}$$
-$$\hat{w}_i = \frac{w_i}{w_x + w_y + w_z}$$
+
+$$
+\begin{aligned}
+w_i &= \max(0.0, |N_i| - 0.2)^4, \quad i \in \{x, y, z\} \\
+\hat{w}_i &= \frac{w_i}{w_x + w_y + w_z}
+\end{aligned}
+$$
+
 This ensures sharp, crisp texture projection on amorphous, dynamically deforming geometry.
 
 ---
@@ -28,10 +34,14 @@ This ensures sharp, crisp texture projection on amorphous, dynamically deforming
 Conventional triplanar normal mapping utilizes sign-based plane flips ($\text{sign}(N_x)$). On implicit raymarched surfaces, this produces severe $180^\circ$ normal flips and glaring discontinuous seams across the Cartesian symmetry planes ($X = 0$, $Y = 0$, $Z = 0$).
 
 ### The Surface Gradient Formulation
-PulseEngine implements the **Morten Mikkelsen Surface Gradient** framework (standardized in high-end game engines and Blender). The surface gradient $\nabla_{\text{surf}} h$ represents the change of height $h$ strictly tangent to the implicit surface:
+VolumetricSDF implements the **Morten Mikkelsen Surface Gradient** framework (standardized in high-end game engines and Blender). The surface gradient $\nabla_{\text{surf}} h$ represents the change of height $h$ strictly tangent to the implicit surface:
 
-$$\nabla_{\text{surf}} h = \nabla h - (\mathbf{N} \cdot \nabla h) \mathbf{N}$$
-$$\mathbf{N}' = \text{normalize}\left(\mathbf{N} - \text{bumpStrength} \cdot \nabla_{\text{surf}} h\right)$$
+$$
+\begin{aligned}
+\nabla_{\text{surf}} h &= \nabla h - (\mathbf{N} \cdot \nabla h) \mathbf{N} \\
+\mathbf{N}' &= \text{normalize}\left(\mathbf{N} - \text{bumpStrength} \cdot \nabla_{\text{surf}} h\right)
+\end{aligned}
+$$
 
 Because the surface gradient is inherently tangent to the geometric normal $\mathbf{N}$, it produces **$C^1$ continuous normal maps with zero symmetry seams**, providing smooth micro-relief across dynamically morphing metaballs.
 
@@ -46,7 +56,10 @@ Because the surface gradient is inherently tangent to the geometric normal $\mat
 For stylized medical illustrations and clinical diagnostics, VolumetricSDF supports **Material Capture (MatCap)** shading.
 
 MatCaps sample a spherical reference texture using the view-space surface normal:
-$$\mathbf{u}_{\text{matcap}} = \mathbf{N}_{\text{view}} \cdot 0.5 + 0.5$$
+
+$$
+\mathbf{u}_{\text{matcap}} = \mathbf{N}_{\text{view}} \cdot 0.5 + 0.5
+$$
 
 VolumetricSDF ships with four medical-grade MatCap and procedural textures in `Runtime/VolumetricSDF/Textures/`:
 * **`Medical_Bone_MatCap.png`**: Rigid, calcified cortical bone shading with smooth specular falloff.
@@ -61,6 +74,10 @@ VolumetricSDF ships with four medical-grade MatCap and procedural textures in `R
 `BioSignalSDF.shader` connects directly into URP's lighting pipeline:
 * Calls `GetMainLight()` to fetch the scene's primary directional sun light.
 * Transforms world-space light direction into local object space:
-  $$\mathbf{L}_{\text{local}} = \text{TransformWorldToObjectDir}(\text{mainLight.direction})$$
+
+  $$
+  \mathbf{L}_{\text{local}} = \text{TransformWorldToObjectDir}(\text{mainLight.direction})
+  $$
+
 * Evaluates Blinn-Phong specular highlights and Half-Lambert diffuse shading.
 * The implicit geometry reacts in real time to the rotation, color, and intensity of Unity's scene lighting.

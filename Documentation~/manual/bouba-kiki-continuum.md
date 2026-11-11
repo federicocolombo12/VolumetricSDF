@@ -25,13 +25,18 @@ Discovered by Wolfgang Köhler (1929) and expanded by Ramachandran & Hubbard (20
 
 The continuous transition between Bouba and Kiki is governed by a state interpolation parameter $\alpha \in [0, 1]$:
 
-$$\mathcal{S}(\mathbf{p}, \alpha) = (1 - \alpha) \cdot d_{\text{Bouba}}(\mathbf{p}) + \alpha \cdot d_{\text{Kiki}}(\mathbf{p}) + \mathcal{N}(\mathbf{p}, \alpha)$$
+$$
+\mathcal{S}(\mathbf{p}, \alpha) = (1 - \alpha) \cdot d_{\text{Bouba}}(\mathbf{p}) + \alpha \cdot d_{\text{Kiki}}(\mathbf{p}) + \mathcal{N}(\mathbf{p}, \alpha)
+$$
 
 Where:
 * $d_{\text{Bouba}}(\mathbf{p})$: Analytical union of spheres with smooth blending softness $k_{\text{eff}} = 0.25 \cdot (1 - \alpha)$.
 * $d_{\text{Kiki}}(\mathbf{p})$: Directional conical and pyramidal primitives with sharp intersection and high taper.
 * $\mathcal{N}(\mathbf{p}, \alpha)$: Localized 3D Perlin noise whose amplitude and frequency scale linearly with arousal:
-  $$\text{NoiseAmp} = \alpha \cdot A_{\text{max}}, \quad \text{NoiseFreq} = f_0 + \alpha \cdot \Delta f$$
+
+  $$
+  \text{NoiseAmp} = \alpha \cdot A_{\text{max}}, \quad \text{NoiseFreq} = f_0 + \alpha \cdot \Delta f
+  $$
 
 <p align="center">
   <img src="../images/bouba_kiki_morph.gif" width="70%" alt="Bouba-Kiki Dynamic Morphing" />

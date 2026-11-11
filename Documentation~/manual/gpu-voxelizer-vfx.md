@@ -31,7 +31,11 @@ In Unity VFX Graph, the native `Sample SDF` block automatically multiplies sampl
 
 ### The VolumetricSDF Solution
 `SdfVolumeVoxelizer.compute` normalizes output distances by the volume bounding dimension before writing to `Result[id]`:
-$$\text{Result.r} = \frac{d_{\text{world}}}{\max(\text{VolumeSize})}$$
+
+$$
+\text{Result.r} = \frac{d_{\text{world}}}{\max(\text{VolumeSize})}
+$$
+
 In VFX Graph, connecting `SdfVolumeSize` directly to the `FieldTransform.size` pin creates an **exact 1:1 metric correspondence**: particles stick with surgical precision to the surface boundary ($d = 0.0$) regardless of volume scaling ($1.0\text{ m} \to 3.0\text{ m}$).
 
 ---
@@ -89,7 +93,11 @@ In complex multi-node organ morphologies, different biological structures requir
 
 * **Previous Bottleneck**: In early iterations, the internal sub-graph `CalculateSdfUvw` bound its `PositionWS` input to a constant vector $(0, 0, 0)$. As a result, all particles across the entire volume evaluated the UVW coordinates of the root node, forcing the entire particle swarm to adopt a uniform color.
 * **World-Space Per-Particle Evaluation**: VolumetricSDF replaces the fixed constant with `Get Attribute: Position (Space: World)`. Every particle dynamically samples its true continuous 3D coordinate against the node hierarchy's transforms:
-  $$\mathbf{u}_i = \text{WorldToObject}_j \cdot \mathbf{x}_{\text{particle}}$$
+
+  $$
+  \mathbf{u}_i = \text{WorldToObject}_j \cdot \mathbf{x}_{\text{particle}}
+  $$
+
 * **Smooth Color Morphing**: In CSG blend zones, polynomial smooth-min weighting smoothly interpolates between node color attributes, producing harmonious chromatic gradients across composite shapes.
 
 ---

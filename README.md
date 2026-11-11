@@ -100,8 +100,14 @@ VolumetricSDF renders solid procedural geometry using mathematical **Constructiv
 * **Analytic Primitives**: Sphere, Box, Torus, Cylinder, Capsule, and Baked 3D Textures (`.asset`).
 * **CSG Operations**: `Union`, `Subtraction`, `Intersection`, `SmoothUnion`, `SmoothSubtraction`, `SmoothIntersection`.
 * **$C^1$-Continuous Polynomial Smooth Blending (Inigo Quilez Formulation)**:
-  $$h = \text{clamp}\left(0.5 + 0.5 \cdot \frac{d_2 - d_1}{k}, 0.0, 1.0\right)$$
-  $$\text{SmoothUnion}(d_1, d_2, k) = \text{lerp}(d_2, d_1, h) - k \cdot h \cdot (1.0 - h)$$
+
+  $$
+  \begin{aligned}
+  h &= \text{clamp}\left(0.5 + 0.5 \cdot \frac{d_2 - d_1}{k}, 0.0, 1.0\right) \\
+  \text{SmoothUnion}(d_1, d_2, k) &= \text{lerp}(d_2, d_1, h) - k \cdot h \cdot (1.0 - h)
+  \end{aligned}
+  $$
+
   where $k$ is the per-node `blendSoftness` parameter.
 * **Order-Independent Evaluation**: Re-ordering GameObjects in Unity's hierarchy window immediately updates the Boolean evaluation order without recompilation.
 
@@ -121,7 +127,10 @@ Rather than applying global space distortions that tear whole scenes apart, Volu
 
 * **AABB Spatial Culling**: Coordinates outside the modifier's oriented bounding box skip deformation entirely with zero GPU cycle overhead.
 * **Hermite Falloff Attenuation**: Coordinates within the falloff margin are warped via smooth cubic attenuation:
-  $$w = \text{smoothstep}(1.0, 0.0, d_{\text{margin}})$$
+
+  $$
+  w = \text{smoothstep}(1.0, 0.0, d_{\text{margin}})
+  $$
 * **Supported Warps**: Localized **Twist** (torsional contortion along local axis), **Bend** (polynomial curvature), **Taper** (axial scale dilation), and **3D Simplex Noise** (organic membrane displacement).
 
 ---

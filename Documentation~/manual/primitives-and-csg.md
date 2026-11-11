@@ -8,11 +8,13 @@ The **Volumetric Engine** in VolumetricSDF renders solid procedural geometry usi
 
 A Signed Distance Function defines the shortest Euclidean distance from any point $\mathbf{p} \in \mathbb{R}^3$ in 3D space to the boundary of a geometric surface:
 
-$$f(\mathbf{p}) = \begin{cases} 
-< 0 & \text{inside the surface} \\
+$$
+f(\mathbf{p}) = \begin{cases}
+\lt 0 & \text{inside the surface} \\
 = 0 & \text{on the boundary surface} \\
-> 0 & \text{outside the surface}
-\end{cases}$$
+\gt 0 & \text{outside the surface}
+\end{cases}
+$$
 
 Surfaces are rendered using **Sphere Tracing** (Raymarching): a ray is marched from the camera into the scene, stepping forward along the view direction by the distance $d = f(\mathbf{p})$ returned by the SDF, until it intersects the boundary ($d < \epsilon$).
 
@@ -46,17 +48,33 @@ Multiple `SdfNode` components combine constructively to form complex organisms o
 Sharp boolean cuts look rigid and mechanical. VolumetricSDF incorporates smooth polynomial blending to simulate visceral, melting, and organic fusions:
 
 #### Smooth Union
-$$h = \text{clamp}\left(0.5 + 0.5 \cdot \frac{d_2 - d_1}{k}, 0.0, 1.0\right)$$
-$$\text{SmoothUnion}(d_1, d_2, k) = \text{lerp}(d_2, d_1, h) - k \cdot h \cdot (1.0 - h)$$
+
+$$
+\begin{aligned}
+h &= \text{clamp}\left(0.5 + 0.5 \cdot \frac{d_2 - d_1}{k}, 0.0, 1.0\right) \\
+\text{SmoothUnion}(d_1, d_2, k) &= \text{lerp}(d_2, d_1, h) - k \cdot h \cdot (1.0 - h)
+\end{aligned}
+$$
+
 where $k$ is the `blendSoftness` parameter.
 
 #### Smooth Subtraction
-$$h = \text{clamp}\left(0.5 - 0.5 \cdot \frac{d_1 + d_2}{k}, 0.0, 1.0\right)$$
-$$\text{SmoothSub}(d_1, d_2, k) = \text{lerp}(d_1, -d_2, h) + k \cdot h \cdot (1.0 - h)$$
+
+$$
+\begin{aligned}
+h &= \text{clamp}\left(0.5 - 0.5 \cdot \frac{d_1 + d_2}{k}, 0.0, 1.0\right) \\
+\text{SmoothSub}(d_1, d_2, k) &= \text{lerp}(d_1, -d_2, h) + k \cdot h \cdot (1.0 - h)
+\end{aligned}
+$$
 
 #### Smooth Intersection
-$$h = \text{clamp}\left(0.5 - 0.5 \cdot \frac{d_1 - d_2}{k}, 0.0, 1.0\right)$$
-$$\text{SmoothInt}(d_1, d_2, k) = \text{lerp}(d_1, d_2, h) + k \cdot h \cdot (1.0 - h)$$
+
+$$
+\begin{aligned}
+h &= \text{clamp}\left(0.5 - 0.5 \cdot \frac{d_1 - d_2}{k}, 0.0, 1.0\right) \\
+\text{SmoothInt}(d_1, d_2, k) &= \text{lerp}(d_1, d_2, h) + k \cdot h \cdot (1.0 - h)
+\end{aligned}
+$$
 
 <p align="center">
   <img src="../images/csg_modeling_demo.gif" width="70%" alt="CSG Procedural Modeling in Scene View" />

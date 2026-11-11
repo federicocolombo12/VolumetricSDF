@@ -22,20 +22,34 @@ Modifier volumes exist as independent GameObjects in 3D space with dedicated pos
 
 ### 1. Twist (Torsional Contortion)
 Twists 3D space along the local Y-axis proportional to height and angle:
-$$\theta = y \cdot \text{twistAngle} \cdot w$$
-$$p_x' = p_x \cos(\theta) - p_z \sin(\theta)$$
-$$p_z' = p_x \sin(\theta) + p_z \cos(\theta)$$
+
+$$
+\begin{aligned}
+\theta &= y \cdot \text{twistAngle} \cdot w \\
+p_x' &= p_x \cos(\theta) - p_z \sin(\theta) \\
+p_z' &= p_x \sin(\theta) + p_z \cos(\theta)
+\end{aligned}
+$$
+
 where $w \in [0, 1]$ is the localized falloff weight.
 
 ### 2. Bend (Curvature Deformation)
 Bends space along a cylindrical curvature radius $R$:
-$$\theta = p_x \cdot \text{bendCurvature} \cdot w$$
-$$p_x' = R \sin(\theta)$$
-$$p_y' = p_y - R (1 - \cos(\theta))$$
+
+$$
+\begin{aligned}
+\theta &= p_x \cdot \text{bendCurvature} \cdot w \\
+p_x' &= R \sin(\theta) \\
+p_y' &= p_y - R (1 - \cos(\theta))
+\end{aligned}
+$$
 
 ### 3. Bounded 3D Noise (Cellular & Organic Turbulence)
 Displaces surface boundaries using high-frequency 3D procedural noise confined strictly to the volume:
-$$\mathbf{p}' = \mathbf{p} + \nabla \text{Noise}(\mathbf{p} \cdot \text{frequency}) \cdot \text{amplitude} \cdot w$$
+
+$$
+\mathbf{p}' = \mathbf{p} + \nabla \text{Noise}(\mathbf{p} \cdot \text{frequency}) \cdot \text{amplitude} \cdot w
+$$
 
 ---
 

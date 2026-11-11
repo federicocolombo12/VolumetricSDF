@@ -54,7 +54,11 @@ Comparing Test 04 (*Physics-Only $64^3$*) with Test 08 (*Solid Mesh $64^3$*):
 
 ### 2. VRAM Bandwidth Scaling
 The Compute Shader voxelizer allocates memory according to the formula:
-$$\text{VRAM} = \text{Resolution}^3 \times 8 \text{ Bytes (RGBAHalf 16-bit float)}$$
+
+$$
+\text{VRAM} = \text{Resolution}^3 \times 8 \text{ Bytes (RGBAHalf 16-bit float)}
+$$
+
 * At $64^3$, memory footprint is a negligible **$2.00\text{ MB}$**.
 * Even at ultra-dense $128^3$ resolution, memory is capped at **$16.00\text{ MB}$**, negligible on Quest 3's 8GB unified memory pool.
 

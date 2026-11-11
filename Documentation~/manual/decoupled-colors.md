@@ -7,7 +7,11 @@ A fundamental innovation in **VolumetricSDF** is the decoupling of spatial dista
 ## 1. The Limitation of Standard Signed Distance Volumes
 
 In traditional volumetric pipelines (e.g., standard MudBun, Unreal Engine distance fields, or classic raymarchers), a 3D texture only records a single scalar distance value:
-$$\mathbf{V}(x, y, z) = d(x, y, z)$$
+
+$$
+\mathbf{V}(x, y, z) = d(x, y, z)
+$$
+
 Consequently, when a particle system (such as Unity VFX Graph) interacts with the volume:
 1. Particles can calculate adhesion or normal vectors: $\mathbf{n} = \nabla d$.
 2. Particles **cannot** determine *which* object or semantic region of the geometry they are interacting with.
@@ -54,7 +58,11 @@ In **Unity VFX Graph**, particles query the volume texture using their world pos
 
 When two CSG nodes with different colors $C_1$ and $C_2$ undergo smooth polynomial blending ($k > 0$), the chromatic contribution is blended using the polynomial weight factor:
 
-$$h = \text{clamp}\left(0.5 + 0.5 \cdot \frac{d_2 - d_1}{k}, 0.0, 1.0\right)$$
-$$C_{\text{blended}} = \text{lerp}(C_2, C_1, h)$$
+$$
+\begin{aligned}
+h &= \text{clamp}\left(0.5 + 0.5 \cdot \frac{d_2 - d_1}{k}, 0.0, 1.0\right) \\
+C_{\text{blended}} &= \text{lerp}(C_2, C_1, h)
+\end{aligned}
+$$
 
 This ensures that the transition between adjacent organ tissues or procedural shapes does not suffer from harsh color seams or rasterization artifacts.
